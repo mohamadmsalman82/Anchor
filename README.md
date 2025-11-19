@@ -174,3 +174,4 @@ The extension requires:
 
 MIT
 
+# Anchor
