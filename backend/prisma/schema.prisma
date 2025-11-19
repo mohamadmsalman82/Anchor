@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String       @id @default(cuid())
+  email            String       @unique
+  passwordHash     String
+  firstName        String?
+  lastName         String?
+  profilePictureUrl String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  sessions         Session[]
+  friendships      Friendship[] @relation("UserFriendships")
+  friendsOf        Friendship[] @relation("FriendFriendships")
+  domainOverrides  UserDomainOverride[]
+
+  @@index([email])
+}
+
+model Session {
+  id                     String   @id @default(cuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  startedAt              DateTime
+  endedAt                DateTime?
+  
+  totalSessionSeconds    Int      @default(0)
+  lockedInSeconds        Int      @default(0)
+  nonLockSeconds         Int      @default(0)
+  idleBeyond2minSeconds  Int      @default(0)
+  tabSwitchCount         Int      @default(0)
+  lockBreakCount         Int      @default(0)
+  focusRate              Float    @default(0) // lockedInSeconds / totalSessionSeconds
+  
+  // for website UI
+  title                  String?
+  description            String?
+  isPosted               Boolean  @default(true) // for feed visibility
+  
+  // AI fields (future use)
+  aiSummary              String?
+  aiTags                 String? // JSON string or comma-separated tags
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  
+  activitySegments       ActivitySegment[]
+  files                  SessionFile[]
+
+  @@index([userId])
+  @@index([startedAt])
+  @@index([isPosted, startedAt])
+}
+
+enum NonLockReason {
+  unproductive_domain
+  neutral_domain
+  idle_beyond_2m
+  failed_check
+  other
+}
+
+model ActivitySegment {
+  id          String         @id @default(cuid())
+  sessionId   String
+  session     Session        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  start       DateTime
+  end         DateTime       // segments are only stored once closed
+  domain      String?        // null if no active tab
+  productive  Boolean        // based on config (true=productive, false=not)
+  lockedIn    Boolean        // true if locked-in, false if non-lock
+  reason      NonLockReason? // populated when lockedIn=false
+  
+  createdAt   DateTime       @default(now())
+
+  @@index([sessionId])
+  @@index([start, end])
+}
+
+enum DomainType {
+  PRODUCTIVE
+  UNPRODUCTIVE
+  NEUTRAL
+}
+
+model DomainConfig {
+  id          String     @id @default(cuid())
+  domain      String     @unique // e.g. "docs.google.com"
+  type        DomainType
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([domain])
+  @@index([type])
+}
+
+model UserDomainOverride {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain      String     // e.g. "instagram.com"
+  type        DomainType // PRODUCTIVE, UNPRODUCTIVE, or NEUTRAL
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([userId, domain])
+  @@index([userId])
+  @@index([domain])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  userId      String
+  friendId    String
+  user        User             @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend      User             @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+  @@index([status])
+}
+
+model SessionFile {
+  id          String    @id @default(cuid())
+  sessionId   String?   // Nullable for temporary uploads before session ends
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  filename    String   // Original filename
+  filepath    String   // Path on server
+  fileUrl     String   // URL to access the file
+  fileType    String   // MIME type (e.g., image/jpeg, image/png, application/pdf)
+  fileSize    Int      // Size in bytes
+  
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+}
+
