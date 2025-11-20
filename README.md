@@ -54,6 +54,28 @@ Anchor/
    - Click "Load unpacked"
    - Select the `public/` directory
 
+## Running via Docker (frontend + backend)
+
+Build a single image that runs both the Next.js dashboard and the Express backend:
+
+1. **Build the image**:
+   ```bash
+   docker build -t anchor-app .
+   ```
+
+2. **Run it** (the frontend listens on `3000`, backend on `3001`):
+   ```bash
+   docker run -p 3000:3000 -p 3001:3001 anchor-app
+   ```
+
+3. **Optional: publish the image**
+   ```bash
+   docker tag anchor-app yourhubname/anchor-app:latest
+   docker push yourhubname/anchor-app:latest
+   ```
+
+   Others can `docker pull yourhubname/anchor-app:latest` and start the stack without installing Node.js. The backend expects the usual `.env` vars (DATABASE_URL, etc.), so pass them via `-e` when running the container.
+
 ## Development
 
 - **Build once**: `npm run build`

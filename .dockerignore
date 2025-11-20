@@ -1,0 +1,13 @@
+.git
+node_modules
+**/node_modules
+backend/node_modules
+web/node_modules
+web/.next
+dist
+build
+out
+public
+uploads
+.env*
+
