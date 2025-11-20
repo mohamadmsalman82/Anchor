@@ -67,10 +67,27 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
+  // Futuristic input style with glow
+  const inputClasses = `
+    w-full px-5 py-4 
+    bg-slate-50/50 backdrop-blur-sm 
+    border border-slate-200 
+    rounded-2xl 
+    focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400 
+    outline-none 
+    transition-all duration-300 
+    text-slate-900 placeholder:text-slate-400 
+    shadow-sm
+  `;
+  const labelClasses = "block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="p-4 bg-rose-50/80 backdrop-blur border border-rose-200 rounded-2xl text-sm text-rose-600 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
+          <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {error}
         </div>
       )}
@@ -78,7 +95,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       {mode === 'register' && (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="firstName" className={labelClasses}>
               First Name
             </label>
             <input
@@ -87,12 +104,12 @@ export function AuthForm({ mode }: AuthFormProps) {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200"
+              className={inputClasses}
               placeholder="John"
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="lastName" className={labelClasses}>
               Last Name
             </label>
             <input
@@ -101,7 +118,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200"
+              className={inputClasses}
               placeholder="Doe"
             />
           </div>
@@ -109,8 +126,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-          Email
+        <label htmlFor="email" className={labelClasses}>
+          Email Address
         </label>
         <input
           id="email"
@@ -118,13 +135,13 @@ export function AuthForm({ mode }: AuthFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200"
-          placeholder="you@example.com"
+          className={inputClasses}
+          placeholder="you@university.edu"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+        <label htmlFor="password" className={labelClasses}>
           Password
         </label>
         <input
@@ -134,14 +151,14 @@ export function AuthForm({ mode }: AuthFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={mode === 'register' ? 8 : undefined}
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200"
-          placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+          className={inputClasses}
+          placeholder={mode === 'register' ? 'Min 8 characters' : 'Your password'}
         />
       </div>
 
       {mode === 'register' && (
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-2">
+          <label htmlFor="confirmPassword" className={labelClasses}>
             Confirm Password
           </label>
           <input
@@ -150,8 +167,8 @@ export function AuthForm({ mode }: AuthFormProps) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all duration-200"
-            placeholder="Confirm your password"
+            className={inputClasses}
+            placeholder="Confirm password"
           />
         </div>
       )}
@@ -159,11 +176,34 @@ export function AuthForm({ mode }: AuthFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-4 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`
+          w-full px-6 py-4 
+          bg-gradient-to-r from-slate-900 to-slate-800 
+          text-white font-bold tracking-wide rounded-2xl 
+          hover:shadow-lg hover:shadow-slate-900/20 hover:scale-[1.02] 
+          active:scale-[0.98] 
+          transition-all duration-300 
+          disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:scale-100
+          flex items-center justify-center gap-2
+        `}
       >
-        {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+        {loading ? (
+          <>
+            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Processing...</span>
+          </>
+        ) : (
+          <>
+            {mode === 'login' ? 'Log In' : 'Create Account'}
+            <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </>
+        )}
       </button>
     </form>
   );
 }
-

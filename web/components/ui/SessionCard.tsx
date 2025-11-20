@@ -85,17 +85,19 @@ export function SessionCard({ session }: SessionCardProps) {
                         />
                       </div>
                     ) : (
-                      <a
-                        href={fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(fileUrl, '_blank', 'noopener');
+                        }}
                         className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
                       >
                         <span className="text-2xl">📄</span>
                         <span className="text-xs text-slate-700 truncate max-w-[100px]">
                           {file.filename}
                         </span>
-                      </a>
+                      </button>
                     )}
                   </div>
                 );

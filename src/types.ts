@@ -8,11 +8,10 @@ export type SessionState =
 
 /**
  * Reasons why a segment might be non-lock
- * Must match backend enum: unproductive_domain, neutral_domain, idle_beyond_2m, failed_check, other
+ * Must match backend enum: unproductive_domain, idle_beyond_2m, failed_check, other
  */
 export type NonLockReason = 
   | 'unproductive_domain'
-  | 'neutral_domain'
   | 'idle_beyond_2m'
   | 'failed_check'
   | 'other';
@@ -29,7 +28,7 @@ export interface ActivitySegment {
   start: number;         // timestamp in ms
   end?: number;          // timestamp in ms (filled on close)
   domain: string | null;
-  productive: boolean;  // true if productive, false if unproductive or neutral
+  productive: boolean;  // true if productive, false otherwise
   lockedIn: boolean;    // true for lock time, false for non-lock
   reason?: NonLockReason;
 }
@@ -62,7 +61,7 @@ export interface PopupState {
   lockedInSeconds: number;
   focusRate: number;              // 0..1
   currentDomain: string | null;
-  isProductiveDomain: boolean | null;  // true = productive, false = unproductive, null = neutral or unknown
+  isProductiveDomain: boolean | null;  // true = productive, false = unproductive, null = unknown/no domain
   tabSwitchCount: number;
   idleBeyond2minSeconds: number;
   lockBreakCount: number;
@@ -100,13 +99,6 @@ export interface SessionContext {
   currentSessionState: SessionState;
 }
 
-/**
- * Domain configuration stored in chrome.storage.sync
- */
-export interface DomainConfig {
-  productiveDomains: string[];
-  unproductiveDomains: string[];
-}
 
 /**
  * Authentication state stored in chrome.storage.sync

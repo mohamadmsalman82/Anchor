@@ -66,7 +66,6 @@ model Session {
 
 enum NonLockReason {
   unproductive_domain
-  neutral_domain
   idle_beyond_2m
   failed_check
   other
@@ -93,18 +92,6 @@ model ActivitySegment {
 enum DomainType {
   PRODUCTIVE
   UNPRODUCTIVE
-  NEUTRAL
-}
-
-model DomainConfig {
-  id          String     @id @default(cuid())
-  domain      String     @unique // e.g. "docs.google.com"
-  type        DomainType
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@index([domain])
-  @@index([type])
 }
 
 model UserDomainOverride {
@@ -112,7 +99,7 @@ model UserDomainOverride {
   userId      String
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   domain      String     // e.g. "instagram.com"
-  type        DomainType // PRODUCTIVE, UNPRODUCTIVE, or NEUTRAL
+  type        DomainType // PRODUCTIVE or UNPRODUCTIVE
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

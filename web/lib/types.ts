@@ -16,7 +16,7 @@ export interface ActivitySegment {
   domain: string | null;
   productive: boolean;
   lockedIn: boolean;
-  reason?: 'unproductive_domain' | 'neutral_domain' | 'idle_beyond_2m' | 'failed_check' | 'other' | null;
+  reason?: 'unproductive_domain' | 'idle_beyond_2m' | 'failed_check' | 'other' | null;
 }
 
 export interface SessionFile {
@@ -125,23 +125,29 @@ export interface LeaderboardResponse {
 }
 
 export interface DomainOverride {
+  id: string;
   domain: string;
-  type: 'PRODUCTIVE' | 'UNPRODUCTIVE' | 'NEUTRAL';
+  classification: 'productive' | 'unproductive';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DomainInfo {
   domain: string;
-  type: 'PRODUCTIVE' | 'UNPRODUCTIVE' | 'NEUTRAL';
+  classification: 'productive' | 'unproductive';
   isOverride?: boolean;
-  overrideType?: 'PRODUCTIVE' | 'UNPRODUCTIVE' | 'NEUTRAL';
+  overrideClassification?: 'productive' | 'unproductive' | null;
 }
 
 export interface DomainsResponse {
-  presets: {
+  masterLists: {
     productive: string[];
     unproductive: string[];
   };
-  overrides: DomainOverride[];
+  overrides: Array<{
+    domain: string;
+    classification: 'productive' | 'unproductive';
+  }>;
   domains: {
     productive: DomainInfo[];
     unproductive: DomainInfo[];
@@ -151,7 +157,7 @@ export interface DomainsResponse {
 
 export interface DomainClassificationResponse {
   domain: string;
-  type: 'PRODUCTIVE' | 'UNPRODUCTIVE' | 'NEUTRAL';
-  source: 'user_override' | 'preset' | 'default';
+  classification: 'productive' | 'unproductive';
+  source: 'user_override' | 'master_list' | 'default';
 }
 

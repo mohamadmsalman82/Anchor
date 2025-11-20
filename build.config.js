@@ -27,7 +27,7 @@ if (!existsSync(publicDir)) {
 async function buildBackground() {
   await esbuild.build({
     ...buildOptions,
-    entryPoints: ['src/background.ts'],
+    entryPoints: ['src/background/index.ts'],
     outfile: 'public/background.js',
     format: 'iife',
     bundle: true,
@@ -46,7 +46,7 @@ async function buildBackground() {
 async function buildPopup() {
   await esbuild.build({
     ...buildOptions,
-    entryPoints: ['src/popup.tsx'],
+    entryPoints: ['src/popup/index.tsx'],
     outfile: 'public/popup.js',
     format: 'iife',
     bundle: true,
@@ -98,7 +98,7 @@ if (isWatch) {
   // Watch background
   const bgCtx = await esbuild.context({
     ...buildOptions,
-    entryPoints: ['src/background.ts'],
+    entryPoints: ['src/background/index.ts'],
     outfile: 'public/background.js',
     format: 'iife',
     define: {
@@ -109,7 +109,7 @@ if (isWatch) {
   // Watch popup
   const popupCtx = await esbuild.context({
     ...buildOptions,
-    entryPoints: ['src/popup.tsx'],
+    entryPoints: ['src/popup/index.tsx'],
     outfile: 'public/popup.js',
     format: 'iife',
     jsx: 'transform',

@@ -8,7 +8,9 @@ import {
   Cell,
   ResponsiveContainer,
   Legend,
+  Tooltip,
 } from 'recharts';
+import { AnchorCard } from '@/components/ui/AnchorCard';
 
 interface FocusCompositionProps {
   data: DashboardResponse;
@@ -22,22 +24,22 @@ export function FocusComposition({ data, loading }: FocusCompositionProps) {
   const focusRate = data.today.averageFocusRate;
 
   const chartData = [
-    { name: 'Anchored', value: lockedInSeconds, color: '#10b981' },
-    { name: 'UnAnchored', value: Math.max(0, nonLockSeconds), color: '#6b7280' },
+    { name: 'Anchored', value: lockedInSeconds, color: '#2dd4bf' }, // Bright Aqua (Teal 400)
+    { name: 'Drift', value: Math.max(0, nonLockSeconds), color: '#f43f5e' }, // Muted Rose (Rose 500)
   ];
 
   if (loading) {
     return (
-      <div className="rounded-2xl bg-white shadow-sm p-6 border border-slate-100">
+      <AnchorCard className="h-[400px]">
         <div className="h-8 bg-slate-200 rounded w-1/3 mb-6 animate-pulse"></div>
         <div className="h-64 bg-slate-100 rounded-xl animate-pulse"></div>
-      </div>
+      </AnchorCard>
     );
   }
 
   if (totalSeconds === 0) {
     return (
-      <div className="rounded-2xl bg-white shadow-sm p-6 border border-slate-100">
+      <AnchorCard>
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Focus Composition</h3>
         <div className="h-64 flex items-center justify-center text-slate-500">
           <div className="text-center">
@@ -45,17 +47,15 @@ export function FocusComposition({ data, loading }: FocusCompositionProps) {
             <p className="text-xs">Start a session to see your focus breakdown</p>
           </div>
         </div>
-      </div>
+      </AnchorCard>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-white shadow-sm p-6 border border-slate-100">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-1">Focus Composition</h3>
-        <p className="text-sm text-slate-600">Today's focus breakdown</p>
-      </div>
-      
+    <AnchorCard
+      title="Focus Composition"
+      subtitle="Today's lock-in vs drift"
+    >
       <div className="relative">
         <ResponsiveContainer width="100%" height={280}>
           <PieChart>
@@ -63,41 +63,57 @@ export function FocusComposition({ data, loading }: FocusCompositionProps) {
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={70}
-              outerRadius={100}
-              paddingAngle={2}
+              innerRadius={85}
+              outerRadius={105}
+              paddingAngle={4}
               dataKey="value"
               startAngle={90}
               endAngle={-270}
               animationBegin={0}
-              animationDuration={800}
+              animationDuration={1200}
+              cornerRadius={10}
+              stroke="none"
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color} 
+                  className="drop-shadow-md hover:opacity-90 transition-opacity"
+                />
               ))}
             </Pie>
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                padding: '8px 12px',
+              }}
+              itemStyle={{ color: '#0f172a', fontWeight: 600 }}
+              formatter={(value) => `${formatFocusRate((value as number) / totalSeconds)}`}
+            />
             <Legend
               verticalAlign="bottom"
               height={36}
               iconType="circle"
               formatter={(value) => (
-                <span className="text-sm text-slate-700">{value}</span>
+                <span className="text-sm font-medium text-slate-600 ml-1">{value}</span>
               )}
             />
           </PieChart>
         </ResponsiveContainer>
         
         {/* Center text */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center flex flex-col items-center justify-center">
-            <div className="text-4xl font-bold text-slate-900 mb-1 leading-none">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
+          <div className="text-center flex flex-col items-center justify-center animate-in zoom-in fade-in duration-700 delay-300">
+            <div className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Focus</div>
+            <div className="text-4xl font-bold text-slate-900 leading-none tracking-tight">
               {formatFocusRate(focusRate)}
             </div>
-            <div className="text-sm text-slate-600">Focus Rate</div>
           </div>
         </div>
       </div>
-    </div>
+    </AnchorCard>
   );
 }
-

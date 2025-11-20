@@ -10,7 +10,7 @@ const activitySegmentSchema = z.object({
   domain: z.string().nullable(),
   productive: z.boolean(),
   lockedIn: z.boolean(),
-  reason: z.enum(['unproductive_domain', 'neutral_domain', 'idle_beyond_2m', 'failed_check', 'other']).nullable().optional(),
+  reason: z.enum(['unproductive_domain', 'idle_beyond_2m', 'failed_check', 'other']).nullable().optional(),
 });
 
 const activityRequestSchema = z.object({

@@ -3,179 +3,61 @@ import { z } from 'zod';
 import { prisma } from '../config/database.js';
 import { DomainType } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.js';
-import { PRESET_PRODUCTIVE_DOMAINS, PRESET_UNPRODUCTIVE_DOMAINS } from '../config/presetDomains.js';
+import { classifyDomain, PRODUCTIVE_DOMAINS, UNPRODUCTIVE_DOMAINS } from '../config/domainClassification.js';
 
-const createDomainSchema = z.object({
+const createDomainOverrideSchema = z.object({
   domain: z.string().min(1, 'Domain is required'),
-  type: z.enum(['PRODUCTIVE', 'UNPRODUCTIVE', 'NEUTRAL']),
+  classification: z.enum(['productive', 'unproductive']),
 });
 
 /**
- * GET /domains
- * Return preset domains and user-specific overrides
+ * GET /users/me/domain-overrides
+ * Get all domain overrides for the current user
  */
-export async function getDomains(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const userId = req.user?.id;
-
-    // Get user's domain overrides
-    const userOverrides = userId
-      ? await prisma.userDomainOverride.findMany({
-          where: { userId },
-        })
-      : [];
-
-    // Create a map of user overrides for quick lookup
-    const overrideMap = new Map<string, DomainType>();
-    userOverrides.forEach(override => {
-      overrideMap.set(override.domain.toLowerCase(), override.type);
-    });
-
-    // Build response with presets and overrides
-    const productiveDomains = PRESET_PRODUCTIVE_DOMAINS.map(domain => ({
-      domain,
-      type: 'PRODUCTIVE' as DomainType,
-      isOverride: overrideMap.has(domain.toLowerCase()),
-      overrideType: overrideMap.get(domain.toLowerCase()),
-    }));
-
-    const unproductiveDomains = PRESET_UNPRODUCTIVE_DOMAINS.map(domain => ({
-      domain,
-      type: 'UNPRODUCTIVE' as DomainType,
-      isOverride: overrideMap.has(domain.toLowerCase()),
-      overrideType: overrideMap.get(domain.toLowerCase()),
-    }));
-
-    // Add custom overrides that aren't in presets
-    const customOverrides = userOverrides
-      .filter(override => {
-        const domainLower = override.domain.toLowerCase();
-        return !PRESET_PRODUCTIVE_DOMAINS.includes(domainLower) &&
-               !PRESET_UNPRODUCTIVE_DOMAINS.includes(domainLower);
-      })
-      .map(override => ({
-        domain: override.domain,
-        type: override.type,
-        isOverride: true,
-        overrideType: override.type,
-      }));
-
-    res.json({
-      presets: {
-        productive: PRESET_PRODUCTIVE_DOMAINS,
-        unproductive: PRESET_UNPRODUCTIVE_DOMAINS,
-      },
-      overrides: userOverrides.map(o => ({
-        domain: o.domain,
-        type: o.type,
-      })),
-      domains: {
-        productive: productiveDomains,
-        unproductive: unproductiveDomains,
-        custom: customOverrides,
-      },
-    });
-  } catch (error) {
-    throw error;
-  }
-}
-
-/**
- * GET /domains/classification
- * Get classification for a specific domain (for extension use)
- */
-export async function getDomainClassification(req: AuthRequest, res: Response): Promise<void> {
-  try {
-    const domain = req.query.domain as string;
-    if (!domain) {
-      res.status(400).json({ error: 'Domain parameter is required' });
-      return;
-    }
-
-    const userId = req.user?.id;
-    const domainLower = domain.toLowerCase().trim();
-
-    // Hardcoded: q.utoronto.ca is always productive (cannot be overridden)
-    if (domainLower === 'q.utoronto.ca' || domainLower.endsWith('.q.utoronto.ca')) {
-      res.json({
-        domain: domainLower,
-        type: 'PRODUCTIVE',
-        source: 'hardcoded',
-      });
-      return;
-    }
-
-    // Check user override first
-    if (userId) {
-      const override = await prisma.userDomainOverride.findUnique({
-        where: {
-          userId_domain: {
-            userId,
-            domain: domainLower,
-          },
-        },
-      });
-
-      if (override) {
-        res.json({
-          domain: domainLower,
-          type: override.type,
-          source: 'user_override',
-        });
-        return;
-      }
-    }
-
-    // Check presets
-    if (PRESET_PRODUCTIVE_DOMAINS.includes(domainLower)) {
-      res.json({
-        domain: domainLower,
-        type: 'PRODUCTIVE',
-        source: 'preset',
-      });
-      return;
-    }
-
-    if (PRESET_UNPRODUCTIVE_DOMAINS.includes(domainLower)) {
-      res.json({
-        domain: domainLower,
-        type: 'UNPRODUCTIVE',
-        source: 'preset',
-      });
-      return;
-    }
-
-    // Default to neutral
-    res.json({
-      domain: domainLower,
-      type: 'NEUTRAL',
-      source: 'default',
-    });
-  } catch (error) {
-    throw error;
-  }
-}
-
-/**
- * POST /domains/override
- * Create or update a user's domain override
- */
-export async function createOrUpdateOverride(req: AuthRequest, res: Response): Promise<void> {
+export async function getUserDomainOverrides(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.user) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
 
-    const { domain, type } = createDomainSchema.parse(req.body);
+    const userId = req.user.id;
+    const overrides = await prisma.userDomainOverride.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({
+      overrides: overrides.map(o => ({
+        id: o.id,
+        domain: o.domain,
+        classification: o.type === 'PRODUCTIVE' ? 'productive' : 'unproductive',
+        createdAt: o.createdAt,
+        updatedAt: o.updatedAt,
+      })),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * POST /users/me/domain-overrides
+ * Create or update a domain override for the current user
+ */
+export async function createOrUpdateDomainOverride(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { domain, classification } = createDomainOverrideSchema.parse(req.body);
     const userId = req.user.id;
     const domainLower = domain.toLowerCase().trim();
 
-    // Hardcoded: q.utoronto.ca cannot be overridden (always productive)
-    if (domainLower === 'q.utoronto.ca' || domainLower.endsWith('.q.utoronto.ca')) {
-      res.status(400).json({ error: 'q.utoronto.ca is always productive and cannot be overridden' });
-      return;
-    }
+    // Convert classification to DomainType
+    const domainType: DomainType = classification === 'productive' ? 'PRODUCTIVE' : 'UNPRODUCTIVE';
 
     const override = await prisma.userDomainOverride.upsert({
       where: {
@@ -185,17 +67,25 @@ export async function createOrUpdateOverride(req: AuthRequest, res: Response): P
         },
       },
       update: {
-        type: type as DomainType,
+        type: domainType,
         updatedAt: new Date(),
       },
       create: {
         userId,
         domain: domainLower,
-        type: type as DomainType,
+        type: domainType,
       },
     });
 
-    res.json({ override });
+    res.json({
+      override: {
+        id: override.id,
+        domain: override.domain,
+        classification: override.type === 'PRODUCTIVE' ? 'productive' : 'unproductive',
+        createdAt: override.createdAt,
+        updatedAt: override.updatedAt,
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({
@@ -209,10 +99,10 @@ export async function createOrUpdateOverride(req: AuthRequest, res: Response): P
 }
 
 /**
- * DELETE /domains/override/:domain
- * Delete a user's domain override (revert to preset)
+ * DELETE /users/me/domain-overrides/:domain
+ * Delete a domain override for the current user
  */
-export async function deleteOverride(req: AuthRequest, res: Response): Promise<void> {
+export async function deleteDomainOverride(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.user) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -238,9 +128,9 @@ export async function deleteOverride(req: AuthRequest, res: Response): Promise<v
 
     res.json({ message: 'Override deleted' });
   } catch (error) {
-    // If override doesn't exist, that's fine - it's already reverted
+    // If override doesn't exist, that's fine - it's already deleted
     if ((error as any).code === 'P2025') {
-      res.json({ message: 'Override not found (already reverted)' });
+      res.json({ message: 'Override not found' });
       return;
     }
     throw error;
@@ -248,35 +138,127 @@ export async function deleteOverride(req: AuthRequest, res: Response): Promise<v
 }
 
 /**
- * POST /domains
- * Create or update a domain config (legacy - kept for backward compatibility)
+ * GET /domains/classification
+ * Get classification for a specific domain (for extension use)
+ * 
+ * Classification priority:
+ * 1. User override (if exists)
+ * 2. Master list classification
+ * 3. Default to unproductive
  */
-export async function createOrUpdateDomain(req: Request, res: Response): Promise<void> {
+export async function getDomainClassification(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { domain, type } = createDomainSchema.parse(req.body);
-
-    const domainConfig = await prisma.domainConfig.upsert({
-      where: { domain },
-      update: {
-        type: type as DomainType,
-        updatedAt: new Date(),
-      },
-      create: {
-        domain,
-        type: type as DomainType,
-      },
-    });
-
-    res.json({ domain: domainConfig });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        error: 'Validation error',
-        details: error.errors,
-      });
+    const domain = req.query.domain as string;
+    if (!domain) {
+      res.status(400).json({ error: 'Domain parameter is required' });
       return;
     }
+
+    const userId = req.user?.id;
+    const domainLower = domain.toLowerCase().trim();
+
+    // Step 1: Check user override first
+    if (userId) {
+      const override = await prisma.userDomainOverride.findUnique({
+        where: {
+          userId_domain: {
+            userId,
+            domain: domainLower,
+          },
+        },
+      });
+
+      if (override) {
+        const classification = override.type === 'PRODUCTIVE' ? 'productive' : 'unproductive';
+        res.json({
+          domain: domainLower,
+          classification,
+          source: 'user_override',
+        });
+        return;
+      }
+    }
+
+    // Step 2: Check master list (defaults to unproductive if not explicitly productive)
+    const masterClassification = classifyDomain(domainLower);
+    res.json({
+      domain: domainLower,
+      classification: masterClassification,
+      source: 'master_list',
+    });
+  } catch (error) {
     throw error;
   }
 }
 
+/**
+ * GET /domains
+ * Get master domain lists and user overrides (for frontend settings page)
+ */
+export async function getDomains(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const userId = req.user?.id;
+
+    // Get user's domain overrides
+    const userOverrides = userId
+      ? await prisma.userDomainOverride.findMany({
+          where: { userId },
+        })
+      : [];
+
+    // Create a map of user overrides for quick lookup
+    const overrideMap = new Map<string, DomainType>();
+    userOverrides.forEach(override => {
+      overrideMap.set(override.domain.toLowerCase(), override.type);
+    });
+
+    // Build response with master lists and overrides
+    const productiveDomains = Array.from(PRODUCTIVE_DOMAINS).map(domain => ({
+      domain,
+      classification: 'productive' as const,
+      isOverride: overrideMap.has(domain.toLowerCase()),
+      overrideClassification: overrideMap.get(domain.toLowerCase()) === 'PRODUCTIVE' ? 'productive' :
+                              overrideMap.get(domain.toLowerCase()) === 'UNPRODUCTIVE' ? 'unproductive' : null,
+    }));
+
+    const unproductiveDomains = Array.from(UNPRODUCTIVE_DOMAINS).map(domain => ({
+      domain,
+      classification: 'unproductive' as const,
+      isOverride: overrideMap.has(domain.toLowerCase()),
+      overrideClassification: overrideMap.get(domain.toLowerCase()) === 'PRODUCTIVE' ? 'productive' :
+                              overrideMap.get(domain.toLowerCase()) === 'UNPRODUCTIVE' ? 'unproductive' : null,
+    }));
+
+    // Add custom overrides that aren't in master lists
+    const customOverrides = userOverrides
+      .filter(override => {
+        const domainLower = override.domain.toLowerCase();
+        return !PRODUCTIVE_DOMAINS.includes(domainLower as any) &&
+               !UNPRODUCTIVE_DOMAINS.includes(domainLower as any);
+      })
+      .map(override => ({
+        domain: override.domain,
+        classification: override.type === 'PRODUCTIVE' ? 'productive' : 'unproductive',
+        isOverride: true,
+        overrideClassification: override.type === 'PRODUCTIVE' ? 'productive' : 'unproductive',
+      }));
+
+    res.json({
+      masterLists: {
+        productive: Array.from(PRODUCTIVE_DOMAINS),
+        unproductive: Array.from(UNPRODUCTIVE_DOMAINS),
+      },
+      overrides: userOverrides.map(o => ({
+        domain: o.domain,
+        classification: o.type === 'PRODUCTIVE' ? 'productive' : 'unproductive',
+      })),
+      domains: {
+        productive: productiveDomains,
+        unproductive: unproductiveDomains,
+        custom: customOverrides,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
+}

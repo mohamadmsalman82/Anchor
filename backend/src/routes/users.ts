@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { getSessionById, getUserProfile, updateProfile, uploadProfilePicture, deleteProfilePicture } from '../controllers/userController.js';
 import { profilePictureUpload } from '../middleware/profilePictureUpload.js';
+import {
+  getUserDomainOverrides,
+  createOrUpdateDomainOverride,
+  deleteDomainOverride,
+} from '../controllers/domainController.js';
 
 const router = Router();
 
@@ -25,5 +30,9 @@ router.put('/me/profile', authMiddleware, updateProfile);
 router.post('/me/profile/picture', authMiddleware, profilePictureUpload.single('picture'), uploadProfilePicture);
 router.delete('/me/profile/picture', authMiddleware, deleteProfilePicture);
 
-export default router;
+// Domain override routes
+router.get('/me/domain-overrides', authMiddleware, getUserDomainOverrides);
+router.post('/me/domain-overrides', authMiddleware, createOrUpdateDomainOverride);
+router.delete('/me/domain-overrides/:domain', authMiddleware, deleteDomainOverride);
 
+export default router;

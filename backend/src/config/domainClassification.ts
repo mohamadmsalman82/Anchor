@@ -1,10 +1,16 @@
 /**
- * Preset lists of productive and unproductive domains
- * These are the default classifications that users can override
+ * Master Domain Classification Lists
+ * 
+ * This file contains the authoritative lists of productive and unproductive domains.
+ * These lists are used across:
+ * - Backend API for domain classification
+ * - Chrome extension for real-time classification
+ * - Frontend for displaying domain status
+ * 
+ * Total: 100 domains (50 productive + 50 unproductive)
  */
 
-export const PRESET_PRODUCTIVE_DOMAINS = [
-  // University of Toronto domains
+export const PRODUCTIVE_DOMAINS: readonly string[] = [
   'q.utoronto.ca',
   'acorn.utoronto.ca',
   'portal.engineering.utoronto.ca',
@@ -15,23 +21,19 @@ export const PRESET_PRODUCTIVE_DOMAINS = [
   'registrar.utoronto.ca',
   'studentlife.utoronto.ca',
   'utm.utoronto.ca',
-  // Google Workspace
   'docs.google.com',
   'drive.google.com',
   'classroom.google.com',
   'meet.google.com',
   'calendar.google.com',
-  // Note-taking and productivity
   'notion.so',
   'evernote.com',
   'onenote.com',
   'todoist.com',
   'trello.com',
-  // Code repositories
   'github.com',
   'gitlab.com',
   'bitbucket.org',
-  // Developer resources
   'stackoverflow.com',
   'stackoverflowteams.com',
   'leetcode.com',
@@ -44,16 +46,13 @@ export const PRESET_PRODUCTIVE_DOMAINS = [
   'geeksforgeeks.org',
   'cplusplus.com',
   'python.org',
-  // Education platforms
   'khanacademy.org',
   'coursera.org',
   'edx.org',
   'udemy.com',
   'brilliant.org',
-  // Math and science tools
   'wolframalpha.com',
   'desmos.com',
-  // Academic and research
   'overleaf.com',
   'grammarly.com',
   'deepdyve.com',
@@ -62,12 +61,9 @@ export const PRESET_PRODUCTIVE_DOMAINS = [
   'ieeexplore.ieee.org',
   'sciencedirect.com',
   'researchgate.net',
-  // Design tools
-  'figma.com',
-];
+] as const;
 
-export const PRESET_UNPRODUCTIVE_DOMAINS = [
-  // Social media
+export const UNPRODUCTIVE_DOMAINS: readonly string[] = [
   'youtube.com',
   'tiktok.com',
   'instagram.com',
@@ -78,31 +74,26 @@ export const PRESET_UNPRODUCTIVE_DOMAINS = [
   'pinterest.com',
   'tumblr.com',
   'discord.com',
-  // Video streaming
   'netflix.com',
   'primevideo.com',
   'disneyplus.com',
   'hulu.com',
   'crunchyroll.com',
   'twitch.tv',
-  // Music streaming
   'spotify.com',
   'soundcloud.com',
   'deezer.com',
   'applemusic.com',
-  // Gaming
   'roblox.com',
   'store.steampowered.com',
   'epicgames.com',
   'playstation.com',
   'xbox.com',
-  // Entertainment/meme sites
   '9gag.com',
   'boredpanda.com',
   'buzzfeed.com',
   'thechive.com',
   'ifunny.co',
-  // Shopping
   'amazon.com',
   'ebay.com',
   'aliexpress.com',
@@ -113,19 +104,69 @@ export const PRESET_UNPRODUCTIVE_DOMAINS = [
   'costco.com',
   'ikea.com',
   'homedepot.com',
-  // Adult content platforms
   'onlyfans.com',
   'patreon.com',
-  // Other entertainment
   'kick.com',
   'yikyak.com',
   'omegle.com',
-  // Travel/booking (often distracting)
   'tripadvisor.com',
   'booking.com',
   'airbnb.com',
   'expedia.com',
-  // Food delivery
   'ubereats.com',
-];
+] as const;
+
+/**
+ * Normalize a domain string for classification
+ * - Convert to lowercase
+ * - Remove www. prefix
+ * - Trim whitespace
+ */
+function normalizeDomain(domain: string): string {
+  if (!domain || typeof domain !== 'string') {
+    return '';
+  }
+  
+  let normalized = domain.toLowerCase().trim();
+  
+  // Remove www. prefix
+  normalized = normalized.replace(/^www\./, '');
+  
+  return normalized;
+}
+
+/**
+ * Classify a domain as productive or unproductive
+ *
+ * Rules:
+ * 1. Normalize domain (lowercase, strip prefixes)
+ * 2. If in productive list → return "productive"
+ * 3. Otherwise → "unproductive" (default)
+ *
+ * Note: This function does NOT check user overrides.
+ * User overrides should be checked separately before calling this function.
+ *
+ * @param domain - The domain to classify (e.g., "github.com" or "www.github.com")
+ * @returns "productive" | "unproductive"
+ */
+export function classifyDomain(domain: string): 'productive' | 'unproductive' {
+  const normalized = normalizeDomain(domain);
+  
+  if (!normalized) {
+    return 'unproductive';
+  }
+  
+  // Check productive domains
+  if (PRODUCTIVE_DOMAINS.includes(normalized)) {
+    return 'productive';
+  }
+  
+  // Check unproductive domains
+  if (UNPRODUCTIVE_DOMAINS.includes(normalized)) {
+    return 'unproductive';
+  }
+
+  // Default to unproductive if not explicitly productive
+  return 'unproductive';
+}
 

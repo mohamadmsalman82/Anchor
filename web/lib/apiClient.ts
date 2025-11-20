@@ -140,15 +140,19 @@ export async function getDomainClassification(domain: string): Promise<DomainCla
   return apiFetch<DomainClassificationResponse>(`/domains/classification?domain=${encodeURIComponent(domain)}`);
 }
 
-export async function createDomainOverride(domain: string, type: 'PRODUCTIVE' | 'UNPRODUCTIVE' | 'NEUTRAL'): Promise<{ override: DomainOverride }> {
-  return apiFetch<{ override: DomainOverride }>('/domains/override', {
+export async function getUserDomainOverrides(): Promise<{ overrides: DomainOverride[] }> {
+  return apiFetch<{ overrides: DomainOverride[] }>('/me/domain-overrides');
+}
+
+export async function createDomainOverride(domain: string, classification: 'productive' | 'unproductive'): Promise<{ override: DomainOverride }> {
+  return apiFetch<{ override: DomainOverride }>('/me/domain-overrides', {
     method: 'POST',
-    body: JSON.stringify({ domain, type }),
+    body: JSON.stringify({ domain, classification }),
   });
 }
 
 export async function deleteDomainOverride(domain: string): Promise<{ message: string }> {
-  return apiFetch<{ message: string }>(`/domains/override/${encodeURIComponent(domain)}`, {
+  return apiFetch<{ message: string }>(`/me/domain-overrides/${encodeURIComponent(domain)}`, {
     method: 'DELETE',
   });
 }

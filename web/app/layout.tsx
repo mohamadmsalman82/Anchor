@@ -4,8 +4,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { Navbar } from "@/components/ui/Navbar";
 
 export const metadata: Metadata = {
-  title: "Anchor - Focus Tracking",
-  description: "Track your focus sessions and stay anchored",
+  title: "Anchor - Deep Focus for Students",
+  description: "Track your focus sessions and stay anchored in your studies.",
 };
 
 export default function RootLayout({
@@ -15,12 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased bg-white">
+      <body className="font-sans antialiased text-slate-900">
         <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen pb-20 md:pb-24">
+          <main className="min-h-screen pb-24 md:pb-32 pt-6 px-4 md:px-8 max-w-7xl mx-auto">
             {children}
           </main>
+          <Navbar />
         </AuthProvider>
       </body>
     </html>
