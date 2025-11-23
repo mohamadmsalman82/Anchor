@@ -1,4 +1,4 @@
-# Focus Lock-In Chrome Extension
+# Anchor Chrome Extension
 
 A Chrome Extension (Manifest V3) that tracks focus sessions with lock-in detection, idle monitoring, and productivity metrics.
 
