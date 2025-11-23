@@ -12,17 +12,25 @@ interface SessionEditModalProps {
 }
 
 export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEditModalProps) {
-  const [title, setTitle] = useState(session.title || '');
-  const [description, setDescription] = useState(session.description || '');
-  const [isPosted, setIsPosted] = useState(session.isPosted ?? true);
+  const [formData, setFormData] = useState({
+    title: session.title || '',
+    description: session.description || '',
+    goal: session.goal || '',
+    goalCompleted: session.goalCompleted || false,
+    isPosted: session.isPosted ?? true,
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setTitle(session.title || '');
-      setDescription(session.description || '');
-      setIsPosted(session.isPosted ?? true);
+      setFormData({
+        title: session.title || '',
+        description: session.description || '',
+        goal: session.goal || '',
+        goalCompleted: session.goalCompleted || false,
+        isPosted: session.isPosted ?? true,
+      });
       setError(null);
     }
   }, [isOpen, session]);
@@ -35,9 +43,11 @@ export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEd
 
     try {
       const updatedSession = await updateSession(session.id, {
-        title: title.trim() || undefined,
-        description: description.trim() || undefined,
-        isPosted,
+        title: formData.title.trim() || undefined,
+        description: formData.description.trim() || undefined,
+        goal: formData.goal.trim() || undefined,
+        goalCompleted: formData.goalCompleted,
+        isPosted: formData.isPosted,
       });
       onSave(updatedSession);
       onClose();
@@ -85,8 +95,8 @@ export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEd
               <input
                 id="title"
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent focus:outline-none"
                 placeholder="Untitled Session"
                 aria-required="false"
@@ -99,13 +109,38 @@ export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEd
               </label>
               <textarea
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent focus:outline-none resize-none"
                 placeholder="Add a description for this session..."
                 aria-required="false"
               />
+            </div>
+
+            {/* Goal Edit */}
+            <div>
+              <label htmlFor="goal" className="block text-sm font-medium text-slate-700 mb-1.5">
+                Goal
+              </label>
+              <input
+                id="goal"
+                type="text"
+                value={formData.goal || ''}
+                onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent focus:outline-none"
+                placeholder="What did you aim to accomplish?"
+              />
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="goalCompleted"
+                  checked={formData.goalCompleted}
+                  onChange={(e) => setFormData({ ...formData, goalCompleted: e.target.checked })}
+                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                />
+                <label htmlFor="goalCompleted" className="text-sm text-slate-600">Goal Completed</label>
+              </div>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
@@ -116,8 +151,8 @@ export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEd
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={isPosted}
-                  onChange={(e) => setIsPosted(e.target.checked)}
+                  checked={formData.isPosted}
+                  onChange={(e) => setFormData({ ...formData, isPosted: e.target.checked })}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
@@ -148,4 +183,3 @@ export function SessionEditModal({ session, isOpen, onClose, onSave }: SessionEd
     </div>
   );
 }
-

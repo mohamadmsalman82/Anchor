@@ -32,21 +32,21 @@ function DomainRow({
   const isUpdating = updatingDomain === domain;
 
   return (
-    <div className="group flex items-center justify-between p-4 bg-white/50 border border-slate-100 rounded-2xl hover:bg-white hover:border-teal-100 hover:shadow-md transition-all duration-300">
+    <div className="group flex items-center justify-between p-4 bg-slate-900/50 border border-slate-700/60 rounded-2xl hover:bg-slate-900/80 hover:border-teal-400/60 hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-300">
       <div className="flex-1">
-        <div className="font-bold text-slate-900 group-hover:text-teal-900 transition-colors">{domain}</div>
-        <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+        <div className="font-bold text-slate-100 group-hover:text-teal-100 transition-colors">{domain}</div>
+        <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
             masterClassification === 'productive' 
-              ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-              : 'bg-rose-100 text-rose-700 border border-rose-200'
+              ? 'bg-emerald-500/15 text-emerald-200 border border-emerald-400/50' 
+              : 'bg-rose-500/15 text-rose-200 border border-rose-400/50'
           }`}>
             {masterClassification === 'productive' ? '🧠 Focus' : '🌊 Drift'}
           </span>
           {isOverridden && (
             <>
-              <span className="text-slate-300">•</span>
-              <span className="font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+              <span className="text-slate-500">•</span>
+              <span className="font-medium text-slate-200 bg-slate-900/70 px-2 py-0.5 rounded-md border border-slate-600/60">
                 Overridden: {overrideClassification === 'productive' ? 'Productive' : 'Unproductive'}
               </span>
             </>
@@ -59,7 +59,7 @@ function DomainRow({
           <button
             onClick={() => onRevert(domain)}
             disabled={isUpdating}
-            className="text-xs font-bold text-slate-400 hover:text-slate-700 uppercase tracking-wider disabled:opacity-50 transition-colors"
+            className="text-xs font-bold text-slate-400 hover:text-slate-200 uppercase tracking-wider disabled:opacity-50 transition-colors"
           >
             Reset
           </button>
@@ -76,7 +76,7 @@ function DomainRow({
                 onRevert(domain);
               }
             }}
-            className="appearance-none pl-4 pr-10 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-all cursor-pointer"
+            className="appearance-none pl-4 pr-10 py-2 text-sm bg-slate-900/80 border border-slate-700/60 rounded-xl focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-100 shadow-sm hover:border-slate-500 transition-all cursor-pointer"
           >
             <option value="productive">Productive</option>
             <option value="unproductive">Unproductive</option>
@@ -104,10 +104,10 @@ function CustomDomainRow({ domain, classification, onOverride, onRevert, updatin
   const isUpdating = updatingDomain === domain;
 
   return (
-    <div className="group flex items-center justify-between p-4 bg-white/50 border border-slate-100 rounded-2xl hover:bg-white hover:border-teal-100 hover:shadow-md transition-all duration-300">
+    <div className="group flex items-center justify-between p-4 bg-slate-900/50 border border-slate-700/60 rounded-2xl hover:bg-slate-900/80 hover:border-teal-400/60 hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-300">
       <div className="flex-1">
-        <div className="font-bold text-slate-900 group-hover:text-teal-900 transition-colors">{domain}</div>
-        <div className="text-xs text-slate-500 mt-1 font-medium">
+        <div className="font-bold text-slate-100 group-hover:text-teal-100 transition-colors">{domain}</div>
+        <div className="text-xs text-slate-400 mt-1 font-medium">
           Custom Override
         </div>
       </div>
@@ -116,7 +116,7 @@ function CustomDomainRow({ domain, classification, onOverride, onRevert, updatin
         <button
           onClick={() => onRevert(domain)}
           disabled={isUpdating}
-          className="text-xs font-bold text-rose-400 hover:text-rose-600 uppercase tracking-wider disabled:opacity-50 transition-colors"
+          className="text-xs font-bold text-rose-300 hover:text-rose-200 uppercase tracking-wider disabled:opacity-50 transition-colors"
         >
           Delete
         </button>
@@ -128,7 +128,7 @@ function CustomDomainRow({ domain, classification, onOverride, onRevert, updatin
               const newClassification = e.target.value as 'productive' | 'unproductive';
               onOverride(domain, newClassification);
             }}
-            className="appearance-none pl-4 pr-10 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-700 shadow-sm hover:border-slate-300 transition-all cursor-pointer"
+            className="appearance-none pl-4 pr-10 py-2 text-sm bg-slate-900/80 border border-slate-700/60 rounded-xl focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-slate-100 shadow-sm hover:border-slate-500 transition-all cursor-pointer"
           >
             <option value="productive">Productive</option>
             <option value="unproductive">Unproductive</option>
@@ -277,7 +277,7 @@ export function DomainManagement() {
   return (
     <AnchorCard title="Domain Classification" subtitle="Manage which sites are productive">
       {error && (
-        <div className="mb-6 p-4 bg-rose-50/80 backdrop-blur border border-rose-200 rounded-2xl text-sm text-rose-600 animate-in slide-in-from-top shadow-sm font-medium flex items-center gap-2">
+        <div className="mb-6 p-4 bg-rose-900/40 backdrop-blur border border-rose-500/60 rounded-2xl text-sm text-rose-100 animate-in slide-in-from-top shadow-sm font-medium flex items-center gap-2">
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -293,16 +293,16 @@ export function DomainManagement() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search for a domain..."
-            className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 placeholder:text-slate-400 shadow-sm group-hover:bg-white"
+            className="w-full pl-11 pr-4 py-3 bg-slate-900/80 border border-slate-700/60 rounded-2xl focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 transition-all text-slate-100 placeholder:text-slate-400 shadow-sm group-hover:border-teal-400/70"
           />
-          <svg className="w-5 h-5 text-slate-400 absolute left-4 top-3.5 transition-colors group-hover:text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-slate-400 absolute left-4 top-3.5 transition-colors group-hover:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex p-1.5 bg-slate-100/80 rounded-2xl mb-6">
+      <div className="flex p-1.5 bg-slate-900/60 border border-slate-700/60 rounded-2xl mb-6">
         {(['productive', 'unproductive', 'custom'] as Tab[]).map((tab) => {
           const count = tab === 'productive' ? productiveDomains.length 
             : tab === 'unproductive' ? unproductiveDomains.length 
@@ -312,14 +312,14 @@ export function DomainManagement() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                 activeTab === tab
-                  ? 'bg-white text-slate-900 shadow-sm scale-[1.02]'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                  ? 'bg-slate-900 text-teal-100 shadow-sm scale-[1.02] border border-teal-500/50'
+                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/80'
               }`}
             >
               <span className="capitalize">{tab}</span>
-              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${activeTab === tab ? 'bg-slate-100 text-slate-600' : 'bg-slate-200 text-slate-500'}`}>
+              <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${activeTab === tab ? 'bg-slate-800 text-slate-200' : 'bg-slate-900/70 text-slate-400'}`}>
                 {count}
               </span>
             </button>
@@ -329,7 +329,7 @@ export function DomainManagement() {
 
       {/* Quick Add Section */}
       {(activeTab === 'productive' || activeTab === 'unproductive') && (
-        <div className="mb-6 p-1 bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl border border-slate-200">
+        <div className="mb-6 p-1 bg-slate-900/70 rounded-2xl border border-slate-700/60">
           <div className="flex gap-2 p-2">
             <div className="relative flex-1">
               <input
@@ -340,7 +340,7 @@ export function DomainManagement() {
                   setError(null);
                 }}
                 placeholder={`Add new ${activeTab} domain (e.g. coursera.org)`}
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm"
+                className="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700/60 rounded-xl text-sm text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 shadow-sm"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     const classification = activeTab === 'productive' ? 'productive' : 'unproductive';
@@ -357,7 +357,7 @@ export function DomainManagement() {
                 handleAddCustom();
               }}
               disabled={!newDomain.trim()}
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-slate-900/20 transition-all"
+              className="px-6 py-2.5 bg-teal-500 text-slate-950 rounded-xl hover:bg-teal-400 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal-500/30 transition-all"
             >
               Add Domain
             </button>
@@ -366,11 +366,11 @@ export function DomainManagement() {
       )}
 
       {/* Domain Lists */}
-      <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+      <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900/40">
         {activeTab === 'productive' && (
           productiveDomains.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-              <p className="text-slate-400 font-medium">No productive domains found</p>
+            <div className="text-center py-12 bg-slate-900/70 rounded-3xl border border-dashed border-slate-700">
+              <p className="text-slate-500 font-medium">No productive domains found</p>
             </div>
           ) : (
             productiveDomains.map((domainInfo) => (
@@ -390,8 +390,8 @@ export function DomainManagement() {
 
         {activeTab === 'unproductive' && (
           unproductiveDomains.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-              <p className="text-slate-400 font-medium">No unproductive domains found</p>
+            <div className="text-center py-12 bg-slate-900/70 rounded-3xl border border-dashed border-slate-700">
+              <p className="text-slate-500 font-medium">No unproductive domains found</p>
             </div>
           ) : (
             unproductiveDomains.map((domainInfo) => (
@@ -411,8 +411,8 @@ export function DomainManagement() {
 
         {activeTab === 'custom' && (
           <>
-            <div className="p-6 bg-slate-50/80 rounded-3xl border border-slate-100 mb-6">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">Add Custom Override</label>
+            <div className="p-6 bg-slate-900/70 rounded-3xl border border-slate-700/60 mb-6">
+              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 block">Add Custom Override</label>
               <div className="flex flex-col md:flex-row gap-3">
                 <input
                   type="text"
@@ -422,7 +422,7 @@ export function DomainManagement() {
                     setError(null);
                   }}
                   placeholder="example.com"
-                  className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm"
+                  className="flex-1 px-4 py-3 bg-slate-900/80 border border-slate-700/60 rounded-xl text-sm text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 shadow-sm"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddCustom()}
                 />
                 <div className="flex gap-3">
@@ -430,7 +430,7 @@ export function DomainManagement() {
                     <select
                       value={newDomainClassification}
                       onChange={(e) => setNewDomainClassification(e.target.value as 'productive' | 'unproductive')}
-                      className="appearance-none pl-4 pr-10 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white font-semibold text-slate-700 shadow-sm cursor-pointer"
+                      className="appearance-none pl-4 pr-10 py-3 border border-slate-700/60 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 bg-slate-900/80 font-semibold text-slate-100 shadow-sm cursor-pointer"
                     >
                       <option value="productive">Productive</option>
                       <option value="unproductive">Unproductive</option>
@@ -444,7 +444,7 @@ export function DomainManagement() {
                   <button
                     onClick={handleAddCustom}
                     disabled={!newDomain.trim()}
-                    className="px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-slate-900/20 transition-all"
+                    className="px-6 py-3 bg-teal-500 text-slate-950 rounded-xl hover:bg-teal-400 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal-500/30 transition-all"
                   >
                     Add
                   </button>
@@ -453,8 +453,8 @@ export function DomainManagement() {
             </div>
 
             {customDomains.length === 0 ? (
-              <div className="text-center py-12 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-                <p className="text-slate-400 font-medium">No custom overrides yet</p>
+              <div className="text-center py-12 bg-slate-900/70 rounded-3xl border border-dashed border-slate-700">
+                <p className="text-slate-500 font-medium">No custom overrides yet</p>
               </div>
             ) : (
               customDomains.map((domainInfo) => (

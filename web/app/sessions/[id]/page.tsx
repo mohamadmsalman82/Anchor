@@ -4,11 +4,19 @@ import { useState } from 'react';
 import { useSession } from '@/hooks/useSession';
 import { TimelineChart } from '@/components/ui/TimelineChart';
 import { SessionEditModal } from '@/components/ui/SessionEditModal';
+import { FocusDecayCurve } from '@/components/session/FocusDecayCurve';
+import { DeepBlocksList } from '@/components/session/DeepBlocksList';
+import { AttachmentViewer } from '@/components/session/AttachmentViewer';
+import { DistractionPanel } from '@/components/dashboard/DistractionPanel';
+import { AiSessionSummary } from '@/components/session/AiSessionSummary';
 import { formatDuration, formatFocusRate, formatRelativeTime } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { use } from 'react';
 import Image from 'next/image';
 import { AnchorCard } from '@/components/ui/AnchorCard';
+import { SessionFile } from '@/lib/types';
+import { AnimatedWaveBackground } from '@/components/ui/AnimatedWaveBackground';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 export default function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -17,6 +25,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<SessionFile | null>(null);
 
   if (loading) {
     return (
@@ -89,13 +98,16 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="space-y-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Top Header Card - Futuristic */}
-      <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl shadow-slate-900/20">
+    <div className="relative min-h-screen w-full bg-transparent text-slate-100 overflow-hidden">
+      <AnimatedWaveBackground intensity="medium" />
+      <DashboardLayout>
+        <div className="space-y-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Top Header Card - Futuristic, matches dashboard hero */}
+      <div className="relative rounded-3xl overflow-hidden bg-slate-900/90 text-white shadow-xl shadow-slate-950/40 border border-slate-700/70">
         {/* Dynamic Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-3xl -mr-32 -mt-32 animate-pulse duration-1000"></div>
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-3xl -ml-32 -mb-32 mix-blend-screen"></div>
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/25 rounded-full blur-3xl -mr-32 -mt-32 animate-pulse duration-1000"></div>
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/30 rounded-full blur-3xl -ml-32 -mb-32 mix-blend-screen"></div>
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
         </div>
 
@@ -125,7 +137,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
             </div>
             
             {/* Big Stats */}
-            <div className="flex items-center gap-8 md:gap-12 bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div className="flex items-center gap-8 md:gap-12 bg-slate-900/60 backdrop-blur-sm rounded-2xl p-6 border border-teal-500/20 shadow-lg shadow-teal-500/20">
               <div>
                 <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Anchored</div>
                 <div className="text-3xl md:text-4xl font-bold text-teal-400 tabular-nums">{formatDuration(session.lockedInSeconds)}</div>
@@ -137,6 +149,27 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
           </div>
+
+          {/* Goal Section */}
+          {session.goal && (
+            <div className="mt-8 pt-6 border-t border-white/10">
+               <div className="flex items-start gap-3">
+                 <div className={`mt-1 p-1 rounded-full ${session.goalCompleted ? 'bg-teal-500 text-white' : 'bg-white/10 text-slate-400'}`}>
+                   {session.goalCompleted ? (
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                     </svg>
+                   ) : (
+                     <div className="w-4 h-4 rounded-full border-2 border-current"></div>
+                   )}
+                 </div>
+                 <div>
+                   <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Session Goal</div>
+                   <div className="text-lg text-white font-medium">{session.goal}</div>
+                 </div>
+               </div>
+            </div>
+          )}
 
           {/* Edit Button */}
           {isOwner && (
@@ -171,42 +204,30 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
         onSave={handleSave}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Timeline & AI Summary */}
-        <div className="space-y-6">
-          <AnchorCard title="Timeline" subtitle="Session flow visualization">
-             {session.activitySegments && session.activitySegments.length > 0 ? (
-              <div className="py-4">
-                <TimelineChart
-                  segments={session.activitySegments}
-                  totalDuration={session.totalSessionSeconds}
-                />
-              </div>
-            ) : (
-              <div className="text-center py-12 text-slate-400 italic">No timeline data available for this session.</div>
-            )}
-          </AnchorCard>
+      {/* AI Session Analytics - Full Width */}
+      <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <AiSessionSummary sessionId={session.id} />
+      </div>
 
-           {session.aiSummary && (
-            <AnchorCard title="Session Log" className="bg-indigo-50/30 border-indigo-100/50">
-              <div className="flex gap-4">
-                <div className="shrink-0 mt-1">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-slate-700 leading-relaxed text-lg font-medium font-serif italic">"{session.aiSummary}"</p>
-                  <p className="text-xs text-indigo-400 font-bold uppercase tracking-widest mt-3">AI Analysis</p>
-                </div>
-              </div>
-            </AnchorCard>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Timeline, Focus Curve, Deep Work */}
+        <div className="space-y-6">
+          {/* Focus Curve Chart */}
+          {session.activitySegments && session.activitySegments.length > 0 && (
+            <FocusDecayCurve 
+              segments={session.activitySegments} 
+              totalDuration={session.totalSessionSeconds} 
+              sessionStart={session.startedAt}
+            />
+          )}
+
+          {/* Deep Blocks List */}
+          {session.activitySegments && (
+            <DeepBlocksList segments={session.activitySegments} />
           )}
         </div>
 
-        {/* Sites Breakdown */}
+        {/* Sites Breakdown & Focus Leaks */}
         <div className="space-y-6">
           {domainStats.size > 0 ? (
             <AnchorCard title="Domain Breakdown" subtitle="Where your attention went">
@@ -214,27 +235,27 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
                 {Array.from(domainStats.entries())
                   .sort((a, b) => b[1].totalSeconds - a[1].totalSeconds)
                   .map(([domain, stats]) => (
-                    <div key={domain} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+                    <div key={domain} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-700/70 hover:border-teal-400/60 hover:bg-slate-900/90 transition-colors group">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
-                          stats.productive ? 'bg-teal-50 text-teal-600' : 'bg-rose-50 text-rose-600'
+                          stats.productive ? 'bg-teal-500/20 text-teal-300 border border-teal-400/50' : 'bg-rose-500/20 text-rose-300 border border-rose-400/50'
                         }`}>
                           {stats.productive ? '🧠' : '🌊'}
                         </div>
                         <div>
-                          <div className="font-semibold text-slate-900">{domain}</div>
-                          <div className={`text-xs font-medium ${stats.productive ? 'text-teal-600' : 'text-rose-500'}`}>
+                          <div className="font-semibold text-slate-50">{domain}</div>
+                          <div className={`text-xs font-medium ${stats.productive ? 'text-teal-300' : 'text-rose-300'}`}>
                             {stats.productive ? 'Focus Site' : 'Distraction'}
                           </div>
                         </div>
                       </div>
                       
                       <div className="text-right">
-                        <div className="font-bold text-slate-900 tabular-nums">{formatDuration(stats.totalSeconds)}</div>
+                        <div className="font-bold text-slate-50 tabular-nums">{formatDuration(stats.totalSeconds)}</div>
                         <div className="text-xs text-slate-400 font-medium">
                           {stats.lockedInSeconds > 0 ? (
-                            <span className="text-teal-600">{formatDuration(stats.lockedInSeconds)} anchored</span>
-                          ) : 'drifting'}
+                            <span className="text-teal-300">{formatDuration(stats.lockedInSeconds)} anchored</span>
+                          ) : <span className="text-rose-400">drifting</span>}
                         </div>
                       </div>
                     </div>
@@ -245,6 +266,11 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
              <AnchorCard>
                 <div className="text-center py-12 text-slate-400">No domain data recorded</div>
              </AnchorCard>
+          )}
+
+          {/* Distractions / Leaks – now tucked under Domain Breakdown */}
+          {session.analytics?.focusLeaks && (
+            <DistractionPanel leaks={session.analytics.focusLeaks} title="Session Focus Leaks" />
           )}
         </div>
       </div>
@@ -264,8 +290,8 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
                 <div key={file.id} className="relative group">
                   {isImage ? (
                     <div 
-                      className="relative w-full aspect-square rounded-2xl overflow-hidden border border-slate-200 cursor-pointer shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
-                      onClick={() => setLightboxImage(fileUrl)}
+                      className="relative w-full aspect-square rounded-2xl overflow-hidden border border-slate-700 cursor-pointer shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 bg-slate-900/60"
+                      onClick={() => setSelectedFile(file)}
                     >
                       <Image
                         src={fileUrl}
@@ -277,21 +303,20 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   ) : (
-                    <a
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:bg-white hover:border-teal-200 hover:shadow-lg hover:-translate-y-1 transition-all aspect-square group"
-                      download
+                    <div
+                      onClick={() => setSelectedFile(file)}
+                      className="flex flex-col items-center justify-center p-6 bg-slate-900/70 rounded-2xl border border-slate-700 hover:border-teal-400 hover:bg-slate-900/90 hover:shadow-lg hover:-translate-y-1 transition-all aspect-square group cursor-pointer"
                     >
-                      <span className="text-4xl mb-3 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all">📄</span>
-                      <span className="text-xs text-slate-600 text-center truncate w-full font-semibold px-2">
+                      <span className="text-4xl mb-3 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all">
+                        {file.fileType === 'application/pdf' ? '📄' : '📁'}
+                      </span>
+                      <span className="text-xs text-slate-100 text-center truncate w-full font-semibold px-2">
                         {file.filename}
                       </span>
-                      <span className="text-[10px] text-slate-400 mt-1 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] text-slate-400 mt-1 font-medium bg-slate-800/80 px-2 py-0.5 rounded-full">
                         {(file.fileSize / 1024).toFixed(1)} KB
                       </span>
-                    </a>
+                    </div>
                   )}
                 </div>
               );
@@ -300,42 +325,16 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
         </AnchorCard>
       )}
 
-      {/* Image Lightbox */}
-      {lightboxImage && (
-        <div
-          className="fixed inset-0 bg-slate-900/95 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200"
-          onClick={() => setLightboxImage(null)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setLightboxImage(null);
-            }
-          }}
-          tabIndex={-1}
-        >
-          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            <Image
-              src={lightboxImage}
-              alt="Full size preview"
-              width={1200}
-              height={800}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl drop-shadow-2xl"
-              unoptimized
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxImage(null);
-              }}
-              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors backdrop-blur-md border border-white/10"
-              aria-label="Close image preview"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      {/* File Viewer Modal */}
+      {selectedFile && (
+        <AttachmentViewer 
+          file={selectedFile}
+          isOpen={!!selectedFile}
+          onClose={() => setSelectedFile(null)}
+        />
       )}
+        </div>
+      </DashboardLayout>
     </div>
   );
 }

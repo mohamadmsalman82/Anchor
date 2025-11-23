@@ -24,6 +24,7 @@ model User {
   friendships      Friendship[] @relation("UserFriendships")
   friendsOf        Friendship[] @relation("FriendFriendships")
   domainOverrides  UserDomainOverride[]
+  insights         AiInsight[]
 
   @@index([email])
 }
@@ -47,6 +48,8 @@ model Session {
   // for website UI
   title                  String?
   description            String?
+  goal                   String?
+  goalCompleted          Boolean  @default(false)
   isPosted               Boolean  @default(true) // for feed visibility
   
   // AI fields (future use)
@@ -58,6 +61,7 @@ model Session {
   
   activitySegments       ActivitySegment[]
   files                  SessionFile[]
+  insights               AiInsight[]
 
   @@index([userId])
   @@index([startedAt])
@@ -146,3 +150,35 @@ model SessionFile {
   @@index([sessionId])
 }
 
+enum InsightScope {
+  SESSION
+  DAILY
+  WEEKLY
+}
+
+model AiInsight {
+  id                  String       @id @default(cuid())
+  userId              String
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId           String?
+  session             Session?     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  scope               InsightScope
+  
+  rawInput            Json         // The JSON payload sent to Claude
+  rawOutput           Json         // The full JSON returned by Claude
+  
+  summary             String       @db.Text
+  strengths           Json         // Array of strings
+  weaknesses          Json         // Array of strings
+  recommendations     Json         // Array of strings
+  focusArchetype      String?
+  distractionSignature String?
+  nextSessionGoal     String?
+  motivationSnippet   String?
+  
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+}

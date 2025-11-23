@@ -45,8 +45,8 @@ export function DomainBreakdown({ sessions, loading }: DomainBreakdownProps) {
   if (loading) {
     return (
       <AnchorCard>
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6 animate-pulse"></div>
-        <div className="h-64 bg-slate-100 rounded-xl animate-pulse"></div>
+        <div className="h-8 bg-slate-700/50 rounded w-1/3 mb-6 animate-pulse"></div>
+        <div className="h-64 bg-slate-800/50 rounded-xl animate-pulse"></div>
       </AnchorCard>
     );
   }
@@ -54,7 +54,7 @@ export function DomainBreakdown({ sessions, loading }: DomainBreakdownProps) {
   if (domainStats.length === 0) {
     return (
       <AnchorCard title="Top Domains">
-        <div className="h-64 flex items-center justify-center text-slate-500">
+        <div className="h-64 flex items-center justify-center text-slate-400">
           <div className="text-center">
             <p className="text-sm mb-1">No domain data available</p>
             <p className="text-xs">Sessions with activity segments will appear here</p>
@@ -66,66 +66,85 @@ export function DomainBreakdown({ sessions, loading }: DomainBreakdownProps) {
 
   return (
     <AnchorCard title="Top Domains" subtitle="Where you spend your time">
-      <ResponsiveContainer width="100%" height={280}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ percent }) => 
-              percent > 0.1 ? `${(percent * 100).toFixed(0)}%` : ''
-            }
-            outerRadius={100}
-            innerRadius={40}
-            dataKey="value"
-            animationBegin={0}
-            animationDuration={1000}
-            paddingAngle={3}
-            stroke="none"
-          >
-            {chartData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={entry.color} 
-                className="drop-shadow-sm hover:opacity-90 transition-all"
-              />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(4px)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '12px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-            labelStyle={{
-              color: '#64748b',
-              fontWeight: 600,
-              fontSize: '12px',
-              marginBottom: '4px',
-            }}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        {/* Left: Slim stacked list of domains */}
+        <div className="space-y-2">
+          {chartData.map((d) => (
+            <div
+              key={d.name}
+              className="flex items-center justify-between text-xs sm:text-sm text-slate-200"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: d.color }}
+                />
+                <span className="truncate max-w-[160px]">{d.name}</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400 flex-shrink-0">
+                <span>{formatDuration(d.totalSeconds)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Right: Pie chart */}
+        <div className="h-60">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="55%"
+                labelLine={false}
+                label={({ percent }) =>
+                  percent > 0.1 ? `${(percent * 100).toFixed(0)}%` : ''
+                }
+                outerRadius={80}
+                innerRadius={36}
+                dataKey="value"
+                animationBegin={0}
+                animationDuration={800}
+                paddingAngle={3}
+                stroke="none"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    className="drop-shadow-sm hover:opacity-90 transition-all"
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  backdropFilter: 'blur(4px)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                }}
+                labelStyle={{
+                  color: '#94a3b8',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  marginBottom: '4px',
+                }}
             formatter={(value: number, name: string, props: any) => {
               const data = props.payload;
               return [
-                <span key="val" className="font-bold text-slate-900">{formatDuration(data.totalSeconds)}</span>,
-                <span key="label" className="text-slate-500 ml-2">({formatFocusRate(data.focusRate)} focus)</span>
+                <span key="val" className="font-bold text-slate-100">
+                  {formatDuration(data.totalSeconds)}
+                </span>,
               ];
             }}
-            itemStyle={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-          />
-          <Legend
-            verticalAlign="bottom"
-            height={36}
-            iconType="circle"
-            formatter={(value) => (
-              <span className="text-sm text-slate-600 font-medium">{value}</span>
-            )}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+                itemStyle={{ display: 'flex', gap: '8px', alignItems: 'center' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </AnchorCard>
   );
 }

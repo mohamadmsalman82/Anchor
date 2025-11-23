@@ -1,4 +1,4 @@
-import { AuthResponse, DashboardResponse, FeedResponse, Session, ProfileResponse, LeaderboardResponse, DomainsResponse, DomainClassificationResponse, DomainOverride } from './types';
+import { AuthResponse, DashboardResponse, FeedResponse, Session, ProfileResponse, LeaderboardResponse, DomainsResponse, DomainClassificationResponse, DomainOverride, AiInsight, HomeAnalytics } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -40,7 +40,15 @@ export async function apiFetch<T>(
     console.log('API Response:', { status: response.status, ok: response.ok });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      // Attempt to parse error as JSON
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        // If not JSON, default to generic error
+        errorData = { error: `HTTP error! status: ${response.status}` };
+      }
+      
       console.error('API Error:', errorData);
       
       // If user not found (404) or unauthorized (401), clear auth and redirect to login
@@ -124,7 +132,7 @@ export async function getLeaderboard(range: 'weekly' | 'all_time' = 'weekly'): P
 }
 
 // Update session
-export async function updateSession(id: string, data: { title?: string; description?: string; isPosted?: boolean }): Promise<Session> {
+export async function updateSession(id: string, data: { title?: string; description?: string; isPosted?: boolean; goal?: string; goalCompleted?: boolean }): Promise<Session> {
   return apiFetch<Session>(`/sessions/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -195,3 +203,19 @@ export async function deleteProfilePicture(): Promise<{ user: User }> {
   });
 }
 
+// AI Insights
+export async function getSessionInsight(sessionId: string): Promise<AiInsight> {
+  return apiFetch<AiInsight>(`/sessions/${sessionId}/insights`);
+}
+
+export async function generateSessionInsight(sessionId: string, forceRegenerate = false): Promise<AiInsight> {
+  return apiFetch<AiInsight>(`/sessions/${sessionId}/insights`, {
+    method: 'POST',
+    body: JSON.stringify({ forceRegenerate }),
+  });
+}
+
+export async function getHomeAnalytics(force = false): Promise<HomeAnalytics> {
+  const query = force ? '?force=true' : '';
+  return apiFetch<HomeAnalytics>(`/me/analytics/home${query}`);
+}

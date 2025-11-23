@@ -27,6 +27,29 @@ export interface SessionFile {
   fileSize: number;
 }
 
+export interface DeepWorkMetrics {
+  longestDeepBlock: number; // in seconds
+  deepWorkRatio: number; // 0-1
+  contextSwitchingIndex: number; // switches per hour
+}
+
+export interface DistractionMetrics {
+  timeToFirstDistraction: number | null; // seconds from start, or null if none
+  averageDistractionChain: number; // average seconds lost per distraction chain
+  totalDistractionTime: number; // total seconds lost
+}
+
+export interface FocusLeak {
+  domain: string;
+  totalTimeLost: number;
+  count: number;
+}
+
+export interface SessionAnalytics extends DeepWorkMetrics, DistractionMetrics {
+  anchorScore: number; // 0-100
+  focusLeaks?: FocusLeak[];
+}
+
 export interface Session {
   id: string;
   userId?: string;
@@ -42,10 +65,13 @@ export interface Session {
   focusRate: number;
   title?: string | null;
   description?: string | null;
+  goal?: string | null;
+  goalCompleted?: boolean;
   aiSummary?: string | null;
   aiTags?: string | null;
   activitySegments?: ActivitySegment[];
   files?: SessionFile[];
+  analytics?: SessionAnalytics;
 }
 
 export interface AuthResponse {
@@ -71,6 +97,17 @@ export interface DomainStats {
   sessionCount?: number;
 }
 
+export interface DashboardAnalytics {
+  streak: number;
+  anchorScore: number;
+  weeklyDeepWorkRatio: number;
+  weeklyContextSwitching: number;
+  peakFocusHour: number;
+  maxDeepBlock: number;
+  totalDistractionTime: number;
+  focusLeaks: FocusLeak[]; // Global top leaks
+}
+
 export interface DashboardResponse {
   user: User;
   today: {
@@ -83,6 +120,7 @@ export interface DashboardResponse {
     lockedInSeconds: number;
     totalSessionSeconds: number;
     averageFocusRate: number;
+    sessionCount: number;
   };
   recentSessions: Array<{
     id: string;
@@ -92,8 +130,11 @@ export interface DashboardResponse {
     totalSessionSeconds: number;
     title?: string | null;
     files?: SessionFile[];
+    goal?: string | null;
+    goalCompleted?: boolean;
   }>;
   hasActiveSession?: boolean;
+  analytics?: DashboardAnalytics;
 }
 
 export interface FeedResponse {
@@ -117,6 +158,7 @@ export interface LeaderboardEntry {
   totalLockedInSeconds: number;
   sessionCount: number;
   averageFocusRate: number;
+  score: number;
 }
 
 export interface LeaderboardResponse {
@@ -161,3 +203,25 @@ export interface DomainClassificationResponse {
   source: 'user_override' | 'master_list' | 'default';
 }
 
+// AI Insight Types
+export interface AiInsight {
+  session_summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  focus_archetype: string;
+  distraction_signature: string;
+  next_session_goal: string;
+  motivation_snippet: string;
+  generated_at: string;
+}
+
+export interface HomeAnalytics {
+  overall_summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  study_archetype: string;
+  today_focus_tip: string;
+  generated_at: string;
+}

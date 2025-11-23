@@ -4,10 +4,11 @@ import { prisma } from '../config/database.js';
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
+import { calculateAnchorScore, calculateDeepWorkMetrics, calculateDistractionMetrics, calculateFocusLeaks } from '../services/metricsService.js';
 
 /**
  * GET /sessions/:id
- * Return full detail for one session, including segments
+ * Return full detail for one session, including segments and advanced analytics
  * Auth is optional - if provided, user can see their own private sessions
  */
 export async function getSessionById(req: Request | AuthRequest, res: Response): Promise<void> {
@@ -21,6 +22,9 @@ export async function getSessionById(req: Request | AuthRequest, res: Response):
           select: {
             id: true,
             email: true,
+            firstName: true,
+            lastName: true,
+            profilePictureUrl: true,
           },
         },
         activitySegments: {
@@ -45,11 +49,24 @@ export async function getSessionById(req: Request | AuthRequest, res: Response):
       return;
     }
 
+    // Calculate advanced analytics
+    const deepMetrics = calculateDeepWorkMetrics(session);
+    const distractionMetrics = calculateDistractionMetrics(session);
+    const leaks = calculateFocusLeaks(session);
+    const anchorScore = calculateAnchorScore(session.focusRate, session.totalSessionSeconds, deepMetrics.deepWorkRatio);
+
+    const analytics = {
+      ...deepMetrics,
+      ...distractionMetrics,
+      anchorScore,
+      focusLeaks: leaks.slice(0, 5) // Top 5 leaks for this session
+    };
+
     // Check if user owns the session or if it's posted (for public viewing)
     const authReq = req as AuthRequest;
     if (authReq.user && session.userId === authReq.user.id) {
-      // User owns the session, return full details
-      res.json(session);
+      // User owns the session, return full details with analytics
+      res.json({ ...session, analytics });
     } else if (session.isPosted) {
       // Public session, return without sensitive data
       res.json({
@@ -65,9 +82,12 @@ export async function getSessionById(req: Request | AuthRequest, res: Response):
         lockBreakCount: session.lockBreakCount,
         title: session.title,
         description: session.description,
+        goal: session.goal,
+        goalCompleted: session.goalCompleted,
         aiSummary: session.aiSummary,
         activitySegments: session.activitySegments,
         files: session.files,
+        analytics,
       });
     } else {
       res.status(403).json({ error: 'Access denied' });
@@ -92,6 +112,8 @@ export async function getUserProfile(req: Request, res: Response): Promise<void>
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
         profilePictureUrl: true,
         createdAt: true,
       },
@@ -343,4 +365,3 @@ export async function deleteProfilePicture(req: AuthRequest, res: Response): Pro
     throw error;
   }
 }
-

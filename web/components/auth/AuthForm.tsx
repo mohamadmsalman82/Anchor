@@ -67,19 +67,19 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
-  // Futuristic input style with glow
+  // Futuristic input style with glow, adapted for dark ocean environment
   const inputClasses = `
     w-full px-5 py-4 
-    bg-slate-50/50 backdrop-blur-sm 
-    border border-slate-200 
+    bg-transparent backdrop-blur-sm 
+    border border-slate-700/70 
     rounded-2xl 
-    focus:ring-2 focus:ring-teal-400/30 focus:border-teal-400 
+    focus:ring-2 focus:ring-teal-400/40 focus:border-teal-400 
     outline-none 
     transition-all duration-300 
-    text-slate-900 placeholder:text-slate-400 
+    text-slate-50 placeholder:text-slate-400 
     shadow-sm
   `;
-  const labelClasses = "block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1";
+  const labelClasses = "block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 ml-1";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

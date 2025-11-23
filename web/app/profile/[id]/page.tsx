@@ -6,6 +6,7 @@ import { StatCard } from '@/components/ui/StatCard';
 import { formatDuration, formatFocusRate, getAvatarColor, getInitials, getProfilePictureUrl } from '@/lib/utils';
 import { use } from 'react';
 import { AnchorCard } from '@/components/ui/AnchorCard';
+import { AnimatedWaveBackground } from '@/components/ui/AnimatedWaveBackground';
 
 export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -13,13 +14,16 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="animate-pulse space-y-6">
-          <div className="h-32 bg-slate-200 rounded-2xl w-full mb-8"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-slate-200 rounded-2xl"></div>
-            ))}
+      <div className="relative min-h-screen w-full bg-transparent text-slate-100 overflow-hidden">
+        <AnimatedWaveBackground intensity="medium" />
+        <div className="max-w-6xl mx-auto px-4 py-10">
+          <div className="animate-pulse space-y-6">
+            <div className="h-32 bg-slate-800/60 rounded-2xl w-full mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-slate-800/60 rounded-2xl"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -28,9 +32,14 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
 
   if (error || !profile) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="rounded-2xl bg-red-50 border border-red-200 p-6 text-center">
-          <p className="text-red-700">Failed to load profile: {error || 'Profile not found'}</p>
+      <div className="relative min-h-screen w-full bg-transparent text-slate-100 overflow-hidden">
+        <AnimatedWaveBackground intensity="low" />
+        <div className="max-w-6xl mx-auto px-4 py-10">
+          <div className="rounded-3xl bg-rose-950/40 border border-rose-700/60 p-8 text-center shadow-lg shadow-rose-900/40">
+            <p className="text-rose-100 text-lg font-semibold">
+              Failed to load profile: {error || 'Profile not found'}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -39,7 +48,9 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
   const profilePictureUrl = getProfilePictureUrl(profile.user.profilePictureUrl);
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+    <div className="relative min-h-screen w-full bg-transparent text-slate-100 overflow-hidden">
+      <AnimatedWaveBackground intensity="medium" />
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-8 pb-20 animate-in fade-in duration-700">
       {/* User Header */}
       <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-xl">
         {/* Cover Background */}
@@ -136,14 +147,14 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
       {/* Recent Sessions */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Recent Voyages</h2>
+          <h2 className="text-xl font-bold text-slate-100 tracking-tight">Recent Voyages</h2>
         </div>
         
         {profile.recentSessions.length === 0 ? (
           <AnchorCard>
-            <div className="text-center py-12 text-slate-500">
-              <p className="mb-1 font-medium text-slate-900">No sessions yet</p>
-              <p className="text-sm">Start tracking to see your progress here.</p>
+            <div className="text-center py-12 text-slate-300">
+              <p className="mb-1 font-medium text-slate-100">No sessions yet</p>
+              <p className="text-sm text-slate-400">Start tracking to see your progress here.</p>
             </div>
           </AnchorCard>
         ) : (
@@ -153,6 +164,7 @@ export default function ProfilePage({ params }: { params: Promise<{ id: string }
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

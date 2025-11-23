@@ -28,8 +28,8 @@ export function DailyFocusTrend({ data, loading }: DailyFocusTrendProps) {
   if (loading) {
     return (
       <AnchorCard className="h-[400px]">
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6 animate-pulse"></div>
-        <div className="h-64 bg-slate-100 rounded-xl animate-pulse"></div>
+        <div className="h-8 bg-slate-700/50 rounded w-1/3 mb-6 animate-pulse"></div>
+        <div className="h-64 bg-slate-800/50 rounded-xl animate-pulse"></div>
       </AnchorCard>
     );
   }
@@ -37,8 +37,8 @@ export function DailyFocusTrend({ data, loading }: DailyFocusTrendProps) {
   if (days.length === 0) {
     return (
       <AnchorCard>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Daily Focus Trend</h3>
-        <div className="h-64 flex items-center justify-center text-slate-500">
+        <h3 className="text-lg font-semibold text-slate-100 mb-4">Daily Focus Trend</h3>
+        <div className="h-64 flex items-center justify-center text-slate-400">
           <div className="text-center">
             <p className="text-sm mb-1">No data yet</p>
             <p className="text-xs">Start sessions to see your focus trends</p>
@@ -63,27 +63,26 @@ export function DailyFocusTrend({ data, loading }: DailyFocusTrendProps) {
         >
           <defs>
             <linearGradient id="colorLockedIn" x1="0" y1="0" x2="0" y2="1">
-              {/* Deep blue to Teal gradient */}
-              <stop offset="5%" stopColor="#0f172a" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.1} />
+              {/* Cyan to transparent */}
+              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid 
             strokeDasharray="3 3" 
-            stroke="#e2e8f0" 
+            stroke="rgba(255,255,255,0.1)" 
             vertical={false}
-            opacity={0.5}
           />
           <XAxis
             dataKey="dayLabel"
-            stroke="#64748b"
+            stroke="#94a3b8"
             fontSize={12}
             tickLine={false}
             axisLine={false}
             dy={10}
           />
           <YAxis
-            stroke="#64748b"
+            stroke="#94a3b8"
             fontSize={12}
             tickLine={false}
             axisLine={false}
@@ -93,15 +92,15 @@ export function DailyFocusTrend({ data, loading }: DailyFocusTrendProps) {
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
+              border: '1px solid rgba(51, 65, 85, 0.5)',
               borderRadius: '16px',
               padding: '12px',
-              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1)',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
             }}
             labelStyle={{
-              color: '#64748b',
+              color: '#94a3b8',
               fontWeight: 600,
               fontSize: '12px',
               marginBottom: '6px',
@@ -109,23 +108,23 @@ export function DailyFocusTrend({ data, loading }: DailyFocusTrendProps) {
               letterSpacing: '0.05em',
             }}
             formatter={(value: number) => [
-              <span key="val" className="font-bold text-slate-900 text-lg">{value} min</span>,
-              <span key="lbl" className="text-teal-600 font-medium">Anchored</span>
+              <span key="val" className="font-bold text-slate-100 text-lg">{value} min</span>,
+              <span key="lbl" className="text-cyan-400 font-medium">Anchored</span>
             ]}
             labelFormatter={(label) => {
               const dataPoint = chartData.find(d => d.dayLabel === label);
               return dataPoint ? dataPoint.dateLabel : label;
             }}
-            cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+            cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
           <Area
             type="monotone"
             dataKey="lockedInMinutes"
-            stroke="#14b8a6"
+            stroke="#06b6d4"
             strokeWidth={3}
             fill="url(#colorLockedIn)"
-            dot={{ fill: '#0f172a', r: 4, strokeWidth: 2, stroke: '#fff' }}
-            activeDot={{ r: 7, strokeWidth: 0, stroke: '#fff', fill: '#14b8a6' }}
+            dot={{ fill: '#0f172a', r: 4, strokeWidth: 2, stroke: '#06b6d4' }}
+            activeDot={{ r: 7, strokeWidth: 0, stroke: '#fff', fill: '#fff' }}
             animationDuration={1500}
             animationEasing="ease-out"
           />

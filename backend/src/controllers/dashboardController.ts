@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../config/database.js';
+import { calculateAnchorScore, calculateStreak, calculateDeepWorkMetrics, calculateDistractionMetrics, calculateFocusLeaks } from '../services/metricsService.js';
 
 /**
  * GET /me/dashboard
@@ -42,6 +43,10 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
     const last7Days = new Date(today);
     last7Days.setDate(last7Days.getDate() - 7);
 
+    // Calculate last 30 days for streak
+    const last30Days = new Date(today);
+    last30Days.setDate(last30Days.getDate() - 30);
+
     // Get today's sessions
     const todaySessions = await prisma.session.findMany({
       where: {
@@ -53,7 +58,7 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
       },
     });
 
-    // Get last 7 days sessions
+    // Get last 7 days sessions with detailed segments for metrics
     const last7DaysSessions = await prisma.session.findMany({
       where: {
         userId,
@@ -61,7 +66,25 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
           gte: last7Days,
         },
       },
+      include: {
+        activitySegments: true,
+      }
     });
+
+    // Get streak sessions (lightweight query)
+    const streakSessions = await prisma.session.findMany({
+      where: {
+        userId,
+        startedAt: { gte: last30Days },
+      },
+      select: {
+        startedAt: true,
+        lockedInSeconds: true,
+      }
+    });
+
+    // Calculate metrics
+    const streak = calculateStreak(streakSessions);
 
     // Calculate today's stats
     const todayStats = {
@@ -81,6 +104,79 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
     const last7DaysAverageFocusRate = last7DaysStats.totalSessionSeconds > 0
       ? last7DaysSessions.reduce((sum, s) => sum + (s.focusRate * s.totalSessionSeconds), 0) / last7DaysStats.totalSessionSeconds
       : 0;
+
+    // Calculate Advanced Analytics for Dashboard
+    let totalDeepWorkRatioWeighted = 0;
+    let totalContextSwitchingSum = 0;
+    let totalDistractionTime = 0;
+    let maxDeepBlock = 0;
+    
+    // Global focus leaks aggregation
+    const globalLeaksMap = new Map<string, { totalTimeLost: number, count: number }>();
+
+    // For peak hour
+    const hourPerformance = new Array(24).fill(0).map(() => ({ totalFocus: 0, count: 0 }));
+
+    for (const session of last7DaysSessions) {
+        const deepMetrics = calculateDeepWorkMetrics(session);
+        const distractionMetrics = calculateDistractionMetrics(session);
+        const leaks = calculateFocusLeaks(session);
+
+        if (session.lockedInSeconds > 0) {
+           totalDeepWorkRatioWeighted += deepMetrics.deepWorkRatio * session.lockedInSeconds; 
+        }
+        
+        totalContextSwitchingSum += deepMetrics.contextSwitchingIndex;
+        maxDeepBlock = Math.max(maxDeepBlock, deepMetrics.longestDeepBlock);
+        totalDistractionTime += distractionMetrics.totalDistractionTime;
+
+        // Aggregate focus leaks
+        for (const leak of leaks) {
+          const existing = globalLeaksMap.get(leak.domain) || { totalTimeLost: 0, count: 0 };
+          existing.totalTimeLost += leak.totalTimeLost;
+          existing.count += leak.count;
+          globalLeaksMap.set(leak.domain, existing);
+        }
+
+        // Peak hour
+        const hour = new Date(session.startedAt).getHours();
+        hourPerformance[hour].totalFocus += session.focusRate;
+        hourPerformance[hour].count += 1;
+    }
+
+    const weeklyDeepWorkRatio = last7DaysStats.lockedInSeconds > 0 
+      ? totalDeepWorkRatioWeighted / last7DaysStats.lockedInSeconds 
+      : 0;
+    
+    const weeklyContextSwitching = last7DaysSessions.length > 0
+      ? totalContextSwitchingSum / last7DaysSessions.length
+      : 0;
+
+    const avgDailyDuration = last7DaysStats.lockedInSeconds / 7;
+    const anchorScore = calculateAnchorScore(last7DaysAverageFocusRate, avgDailyDuration, weeklyDeepWorkRatio);
+
+    // Determine Peak Focus Hour
+    let peakFocusHour = -1;
+    let maxHourScore = -1;
+    hourPerformance.forEach((h, i) => {
+        if (h.count > 0) {
+            const score = h.totalFocus / h.count;
+            if (score > maxHourScore) {
+                maxHourScore = score;
+                peakFocusHour = i;
+            }
+        }
+    });
+
+    // Sort focus leaks
+    const focusLeaks = Array.from(globalLeaksMap.entries())
+      .map(([domain, stats]) => ({
+        domain,
+        totalTimeLost: stats.totalTimeLost,
+        count: stats.count
+      }))
+      .sort((a, b) => b.totalTimeLost - a.totalTimeLost)
+      .slice(0, 5); // Top 5
 
     // Calculate daily breakdown for last 7 days
     const dailyStatsMap = new Map<string, {
@@ -157,6 +253,8 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
         lockedInSeconds: true,
         totalSessionSeconds: true,
         title: true,
+        goal: true,
+        goalCompleted: true,
         files: {
           select: {
             id: true,
@@ -191,9 +289,18 @@ export async function getDashboard(req: AuthRequest, res: Response): Promise<voi
       last7Days: last7DaysDaily,
       recentSessions,
       hasActiveSession: !!activeSession,
+      analytics: {
+        streak,
+        anchorScore,
+        weeklyDeepWorkRatio,
+        weeklyContextSwitching,
+        peakFocusHour: peakFocusHour,
+        maxDeepBlock,
+        totalDistractionTime,
+        focusLeaks
+      }
     });
   } catch (error) {
     throw error;
   }
 }
-

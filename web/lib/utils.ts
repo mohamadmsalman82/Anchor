@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 /**
  * Format seconds to human-readable duration
  */
@@ -82,4 +89,3 @@ export function getAvatarColor(email: string): string {
 export function getInitials(email: string): string {
   return email.charAt(0).toUpperCase();
 }
-

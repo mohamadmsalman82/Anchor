@@ -76,6 +76,20 @@ Build a single image that runs both the Next.js dashboard and the Express backen
 
    Others can `docker pull yourhubname/anchor-app:latest` and start the stack without installing Node.js. The backend expects the usual `.env` vars (DATABASE_URL, etc.), so pass them via `-e` when running the container.
 
+## Demo data
+
+To create a UofT-style demo student before showing the dashboard:
+
+1. **Run the Prisma seed script** (make sure your `DATABASE_URL` points to your dev database):
+   ```bash
+   cd backend
+   npm run prisma:seed
+   ```
+
+   That creates a user `demo+uoft@example.com` / `AnchorDemo2025!` with 30 days of sessions showing steady focus improvement.
+
+2. **Log in** through your auth flow or insert the seeded user into `sessions`/`profiles` as needed, then browse the dashboard to showcase their progression.
+
 ## Development
 
 - **Build once**: `npm run build`

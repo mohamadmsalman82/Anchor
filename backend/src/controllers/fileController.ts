@@ -39,9 +39,12 @@ export async function uploadFiles(req: AuthRequest, res: Response): Promise<void
     }
 
     const files = Array.isArray(req.files) ? req.files : [req.files];
+    // We need to filter out any non-file objects if multer types are weird, but casting helps
+    const fileList = files.filter((f): f is Express.Multer.File => !!f && 'originalname' in f);
+
     const uploadedFiles = [];
 
-    for (const file of files) {
+    for (const file of fileList) {
       const fileUrl = `/uploads/${file.filename}`;
       
       const sessionFile = await prisma.sessionFile.create({
@@ -90,9 +93,11 @@ export async function uploadFilesTemporary(req: AuthRequest, res: Response): Pro
     }
 
     const files = Array.isArray(req.files) ? req.files : [req.files];
+    const fileList = files.filter((f): f is Express.Multer.File => !!f && 'originalname' in f);
+
     const uploadedFiles = [];
 
-    for (const file of files) {
+    for (const file of fileList) {
       const fileUrl = `/uploads/${file.filename}`;
       
       // Create file record without sessionId (will be linked later)
@@ -123,4 +128,3 @@ export async function uploadFilesTemporary(req: AuthRequest, res: Response): Pro
     throw error;
   }
 }
-

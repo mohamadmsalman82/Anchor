@@ -1,60 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  /* Ocean Theme Palette - Futuristic & Deep */
-  --color-primary: #0f172a; /* Slate 900 - Deep Navy */
-  --color-secondary: #334155; /* Slate 700 - Muted Navy */
-  --color-accent: #2dd4bf; /* Teal 400 - Electric Teal/Aqua */
-  --color-accent-hover: #14b8a6; /* Teal 500 */
-  --color-success: #10b981; /* Emerald 500 */
-  --color-warning: #fbbf24; /* Amber 400 */
-  --color-error: #fb7185; /* Rose 400 - Soft Coral */
-  
-  --background: #f8fafc; /* Slate 50 */
-  --foreground: #0f172a; /* Slate 900 */
-  
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.05);
+  /* Baby blue + white palette */
+  --color-primary: #5AA4D6;
+  --color-secondary: #7FC1F0;
+  --color-accent: #A8D8FF;
+  --color-accent-light: #EAF7FF;
+  --color-beige: #FFFFFF;
+  --color-white-soft: #FFFFFF;
+  --color-card-outline: #E2E8F0;
+
+  --background: #FFFFFF;
+  --foreground: #0A2540;
+
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
   --color-primary: var(--color-primary);
   --color-accent: var(--color-accent);
-  
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-glow: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-@keyframes glow {
-  from { box-shadow: 0 0 10px -5px var(--color-accent); }
-  to { box-shadow: 0 0 20px -5px var(--color-accent); }
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at top right, rgba(234, 247, 255, 0.85), transparent 40%), #FFFFFF;
   color: var(--foreground);
-  font-family: var(--font-sans);
-  /* Deep ocean gradient background - Subtle and premium */
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(15, 23, 42, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(45, 212, 191, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Smooth transitions for everything */
-* {
-  @apply transition-colors duration-200;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #4c5c76;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@keyframes wave-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-wave-drift {
+  animation: wave-drift 30s linear infinite;
+}
+
+/* Glassy card helpers */
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 15px 30px rgba(10, 37, 64, 0.08);
+}
+.accent-whisper {
+  color: var(--color-accent-light);
+}
+.border-accent-light {
+  border-color: rgba(219, 244, 255, 0.6);
 }

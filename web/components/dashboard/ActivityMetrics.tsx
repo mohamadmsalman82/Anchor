@@ -34,8 +34,8 @@ export function ActivityMetrics({ data, loading }: ActivityMetricsProps) {
   if (loading) {
     return (
       <AnchorCard>
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6 animate-pulse"></div>
-        <div className="h-64 bg-slate-100 rounded-xl animate-pulse"></div>
+        <div className="h-8 bg-slate-700/50 rounded w-1/3 mb-6 animate-pulse"></div>
+        <div className="h-64 bg-slate-800/50 rounded-xl animate-pulse"></div>
       </AnchorCard>
     );
   }
@@ -43,7 +43,7 @@ export function ActivityMetrics({ data, loading }: ActivityMetricsProps) {
   if (days.length === 0) {
     return (
       <AnchorCard title="Activity Metrics">
-        <div className="h-64 flex items-center justify-center text-slate-500">
+        <div className="h-64 flex items-center justify-center text-slate-400">
           <div className="text-center">
             <p className="text-sm mb-1">No data yet</p>
             <p className="text-xs">Start sessions to see your activity metrics</p>
@@ -67,20 +67,19 @@ export function ActivityMetrics({ data, loading }: ActivityMetricsProps) {
         >
           <CartesianGrid 
             strokeDasharray="3 3" 
-            stroke="#e2e8f0" 
+            stroke="rgba(255,255,255,0.1)" 
             vertical={false}
-            opacity={0.5}
           />
           <XAxis
             dataKey="dateLabel"
-            stroke="#64748b"
+            stroke="#94a3b8"
             fontSize={12}
             tickLine={false}
             axisLine={false}
             dy={10}
           />
           <YAxis
-            stroke="#64748b"
+            stroke="#94a3b8"
             fontSize={12}
             tickLine={false}
             axisLine={false}
@@ -88,17 +87,17 @@ export function ActivityMetrics({ data, loading }: ActivityMetricsProps) {
             dx={-10}
           />
           <Tooltip
-            cursor={{ fill: '#f8fafc' }}
+            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
               backdropFilter: 'blur(4px)',
               border: 'none',
               borderRadius: '12px',
               padding: '12px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
             }}
             labelStyle={{
-              color: '#64748b',
+              color: '#94a3b8',
               fontWeight: 600,
               fontSize: '12px',
               marginBottom: '8px',
@@ -113,7 +112,7 @@ export function ActivityMetrics({ data, loading }: ActivityMetricsProps) {
           <Legend
             iconType="circle"
             formatter={(value) => (
-              <span className="text-sm font-medium text-slate-600">{value}</span>
+              <span className="text-sm font-medium text-slate-400">{value}</span>
             )}
             verticalAlign="top"
             align="right"

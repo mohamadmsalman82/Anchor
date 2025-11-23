@@ -11,6 +11,9 @@
  */
 
 export const PRODUCTIVE_DOMAINS: readonly string[] = [
+  // Local development
+  'localhost',
+
   'q.utoronto.ca',
   'acorn.utoronto.ca',
   'portal.engineering.utoronto.ca',

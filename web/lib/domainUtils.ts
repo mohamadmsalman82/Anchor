@@ -23,6 +23,11 @@ export function extractDomainFromUrl(input: string): string | null {
   // Remove port if present
   url = url.split(':')[0];
   
+  // Allow localhost for development
+  if (url === 'localhost') {
+    return url;
+  }
+
   // Validate it looks like a domain
   if (!url || url.length === 0) {
     return null;
@@ -49,7 +54,14 @@ export function isValidDomain(domain: string): boolean {
     return false;
   }
 
+  const trimmed = domain.trim().toLowerCase();
+
+  // Allow localhost explicitly for development
+  if (trimmed === 'localhost') {
+    return true;
+  }
+
   const domainRegex = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,}$/i;
-  return domainRegex.test(domain.trim());
+  return domainRegex.test(trimmed);
 }
 

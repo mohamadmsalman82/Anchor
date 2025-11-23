@@ -31,6 +31,7 @@ const endSessionRequestSchema = z.object({
   lockBreakCount: z.number().int().min(0),
   segments: z.array(activitySegmentSchema),
   fileIds: z.array(z.string()).optional(), // Array of file IDs uploaded separately
+  goalCompleted: z.boolean().optional(),
 });
 
 /**
@@ -44,12 +45,15 @@ export async function startSession(req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
+    const { goal } = req.body;
+
     const session = await prisma.session.create({
       data: {
         userId: req.user.id,
         startedAt: new Date(),
         // All metrics default to 0
         isPosted: true,
+        goal,
       },
     });
 
@@ -239,6 +243,7 @@ export async function endSession(req: AuthRequest, res: Response): Promise<void>
         lockBreakCount: data.lockBreakCount,
         focusRate,
         isPosted: true, // Mark as posted so it appears in feed
+        goalCompleted: data.goalCompleted ?? false,
       },
     });
 
@@ -312,6 +317,14 @@ export async function updateSession(req: AuthRequest, res: Response): Promise<vo
     
     if (updateData.isPosted !== undefined) {
       allowedFields.isPosted = Boolean(updateData.isPosted);
+    }
+    
+    if (updateData.goal !== undefined) {
+      allowedFields.goal = updateData.goal;
+    }
+    
+    if (updateData.goalCompleted !== undefined) {
+      allowedFields.goalCompleted = Boolean(updateData.goalCompleted);
     }
 
     // Update session

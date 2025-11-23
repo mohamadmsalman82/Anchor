@@ -131,18 +131,18 @@ export function ExtensionConnect() {
   };
 
   return (
-    <div className="rounded-2xl bg-white shadow-sm p-6 border border-slate-100">
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">Chrome Extension Status</h3>
+    <div className="rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-700/60 p-6 shadow-lg shadow-slate-950/40">
+      <h3 className="text-lg font-semibold text-slate-100 mb-4">Chrome Extension Status</h3>
       
       <div className="space-y-4">
         {/* Connection status indicator */}
         <div className="flex items-center gap-3 mb-4">
-          <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+          <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_12px_rgba(45,212,191,0.7)]' : 'bg-slate-500'}`}></div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-slate-900">
+            <div className="text-sm font-medium text-slate-100">
               {connected ? 'Connected ✅' : 'Not connected ⚠️'}
             </div>
-            <div className="text-xs text-slate-600">
+            <div className="text-xs text-slate-300">
               {extensionDetected 
                 ? 'Extension detected in browser'
                 : 'Open this page in Chrome with the Anchor extension installed'}
@@ -152,7 +152,7 @@ export function ExtensionConnect() {
 
         {/* Connection status message */}
         {connected && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 p-3 rounded-lg mb-4">
+          <div className="flex items-center gap-2 text-sm text-emerald-200 bg-emerald-500/10 border border-emerald-400/40 p-3 rounded-lg mb-4">
             <span>✅</span>
             <span>Extension connected successfully! Your sessions will sync automatically.</span>
           </div>
@@ -160,7 +160,7 @@ export function ExtensionConnect() {
 
         {/* Error message */}
         {error && (
-          <div className="text-sm text-red-700 bg-red-50 p-3 rounded-lg">
+          <div className="text-sm text-rose-200 bg-rose-900/40 border border-rose-500/40 p-3 rounded-lg">
             {error}
           </div>
         )}
@@ -169,7 +169,7 @@ export function ExtensionConnect() {
         {authToken && !connected && extensionDetected && (
           <button
             onClick={handleConnect}
-            className="w-full px-4 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 bg-teal-500 text-slate-950 rounded-lg font-semibold hover:bg-teal-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal-500/40"
             disabled={checking}
           >
             {checking ? 'Checking...' : 'Connect Extension'}
@@ -187,7 +187,7 @@ export function ExtensionConnect() {
                 // For now, just update UI state
               }
             }}
-            className="w-full px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors duration-200 mt-2"
+            className="w-full px-4 py-2 bg-rose-600/90 text-white rounded-lg font-medium hover:bg-rose-500 transition-colors duration-200 mt-2 shadow-md shadow-rose-900/40"
           >
             Revoke Connection
           </button>
@@ -195,8 +195,8 @@ export function ExtensionConnect() {
 
         {/* Fallback: Manual token copy */}
         {authToken && (
-          <div className="pt-4 border-t border-slate-200">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+          <div className="pt-4 border-t border-slate-700/60">
+            <label className="block text-sm font-medium text-slate-200 mb-2">
               Your connection token
             </label>
             <div className="flex items-center gap-2">
@@ -204,24 +204,24 @@ export function ExtensionConnect() {
                 type="password"
                 value={authToken}
                 readOnly
-                className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg bg-slate-50"
+                className="flex-1 px-3 py-2 text-sm border border-slate-600/60 rounded-lg bg-slate-900/80 text-slate-200 font-mono"
               />
               <button
                 onClick={handleCopyToken}
-                className="px-4 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors duration-200"
+                className="px-4 py-2 text-sm bg-slate-800 text-slate-100 rounded-lg hover:bg-slate-700 transition-colors duration-200 border border-slate-600"
               >
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-slate-400 mt-2">
               If automatic connection doesn't work, copy this token and paste it in the extension settings.
             </p>
           </div>
         )}
 
         {/* Instructions */}
-        <div className="pt-4 border-t border-slate-200 mt-4">
-          <p className="text-sm text-slate-600">
+        <div className="pt-4 border-t border-slate-700/60 mt-4">
+          <p className="text-sm text-slate-300">
             Install the Anchor Chrome extension and click 'Connect' to start tracking your focus sessions.
           </p>
         </div>

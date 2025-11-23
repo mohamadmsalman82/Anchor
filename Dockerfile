@@ -16,7 +16,6 @@ COPY --from=deps /work/web/node_modules web/node_modules
 COPY backend/ backend/
 COPY web/ web/
 
-RUN cd backend && npm run build
 RUN cd web && npm run build
 
 FROM node:20-alpine AS runner

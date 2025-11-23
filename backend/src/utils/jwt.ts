@@ -17,7 +17,7 @@ export interface JWTPayload {
  */
 export function generateToken(userId: string): string {
   const payload: JWTPayload = { userId };
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_SECRET as jwt.Secret, {
     expiresIn: '30d', // Tokens expire after 30 days
   });
 }
@@ -30,8 +30,14 @@ export function generateToken(userId: string): string {
  */
 export function verifyToken(token: string): JWTPayload {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    return decoded;
+    const decoded = jwt.verify(token, JWT_SECRET as jwt.Secret);
+    
+    // Ensure decoded is an object and has userId
+    if (typeof decoded === 'object' && decoded !== null && 'userId' in decoded) {
+      return decoded as JWTPayload;
+    }
+    
+    throw new Error('Invalid token payload');
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
       throw new Error('Invalid token');
@@ -42,4 +48,3 @@ export function verifyToken(token: string): JWTPayload {
     throw error;
   }
 }
-
