@@ -9,7 +9,7 @@
   // that `build.config.js` outputs into the `public` folder.
   "assets": {
     "directory": "./public"
-  }
+  },
   "observability": {
     "enabled": false
   }
