@@ -71,10 +71,16 @@ function copyStaticFiles() {
   // Copy manifest.json
   copyFileSync('manifest.json', 'public/manifest.json');
   console.log('✓ Copied manifest.json');
-  
+
   // Copy popup.html
   copyFileSync('src/popup.html', 'public/popup.html');
   console.log('✓ Copied popup.html');
+
+  // Copy index.html for Cloudflare Workers root (if present)
+  if (existsSync('src/index.html')) {
+    copyFileSync('src/index.html', 'public/index.html');
+    console.log('✓ Copied index.html');
+  }
 }
 
 async function build() {
