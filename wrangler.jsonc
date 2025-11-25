@@ -1,6 +1,6 @@
 {
   // Name of your Cloudflare Workers & Pages project
-  "name": "anchor-extension",
+  "name": "anchor",
 
   // Set to today's date or any recent date; Cloudflare uses this for runtime compatibility
   "compatibility_date": "2025-11-25",
