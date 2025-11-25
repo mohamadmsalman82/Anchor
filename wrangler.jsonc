@@ -1,17 +1,8 @@
 {
-  // Name of your Cloudflare Workers & Pages project
-  "name": "anchor-extension",
-
-  // Set to today's date or any recent date; Cloudflare uses this for runtime compatibility
+  "name": "anchor",
   "compatibility_date": "2025-11-25",
-
-  // We are deploying a static directory of assets (the built Chrome extension)
-  // that `build.config.js` outputs into the `public` folder.
   "assets": {
     "directory": "./public"
-  },
-  "observability": {
-    "enabled": false
   }
 }
 
