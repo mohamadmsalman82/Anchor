@@ -10,6 +10,11 @@
   "assets": {
     "directory": "./public"
   }
+  "observability": {
+    "enabled": false
+  }
 }
+
+
 
 
