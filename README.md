@@ -1,171 +1,214 @@
-# Anchor - ML-Powered Focus & Productivity Analytics Platform
+# Focus Lock-In Chrome Extension
+# Anchor Chrome Extension
 
-A Chrome Extension that tracks focus sessions with **machine learning-powered** productivity classification, time-series forecasting, and personalized insights generation using LLMs.
+A Chrome Extension (Manifest V3) that tracks focus sessions with lock-in detection, idle monitoring, and productivity metrics.
 
-## Key Features
+## Features
 
-### Machine Learning Components
-- **Productivity Classification**: PyTorch neural network classifies browsing patterns with **89% accuracy** across 1,000+ user sessions
-- **Time-Series Forecasting**: LSTM model predicts daily productivity trends, processing 50,000+ temporal data points with **<100ms inference latency**
-- **Anomaly Detection**: Neural network identifies attention drift patterns, reducing **false positives by 35%** vs. rule-based approaches
-- **AI-Powered Insights**: Claude API with RAG combines user telemetry with evidence-based focus strategies; **85% satisfaction** from 25+ beta users
-- **End-to-End ML Pipeline**: Feature engineering, model training, and real-time inference across 100+ active sessions
-
-### Core Tracking
-- Focus session monitoring with lock-in detection
-- Idle time tracking with 2-minute threshold
-- Activity segmentation with behavioral metrics
-- Real-time telemetry collection
+- **Focus Session Tracking**: Start and end focus sessions with detailed metrics
+- **Lock-In Detection**: Automatically detects when you're genuinely focused vs distracted
+- **Idle Monitoring**: Tracks idle time with a 2-minute forgiveness threshold
+- **Random Focus Checks**: Periodic popups to verify you're still focused
+- **Productive/Unproductive Site Classification**: Pre-configured domain lists
+- **Activity Segmentation**: Tracks time segments with detailed reasons
+- **Backend Integration**: Uploads session data to your backend API
 
 ## Project Structure
+
 ```
 Anchor/
-├── src/                       # Chrome extension (TypeScript)
-│   ├── background.ts          # Service worker + telemetry
-│   ├── popup.tsx              # React UI
-│   └── config/                # Domain lists, API config
-├── ml/                        # Machine Learning
-│   ├── models/                # PyTorch classifier, LSTM, anomaly detector
-│   ├── training/              # Training scripts
-│   ├── inference/             # Real-time inference API
-│   └── data/                  # Feature engineering pipeline
-├── backend/                   # Express.js API + PostgreSQL
-└── dashboard/                 # Next.js analytics dashboard
+├── manifest.json              # Chrome extension manifest
+├── package.json               # Dependencies and scripts
+├── tsconfig.json              # TypeScript configuration
+├── build.config.js            # Build configuration (esbuild)
+├── src/
+│   ├── background.ts          # Service worker (core logic)
+│   ├── popup.html             # Popup HTML container
+│   ├── popup.tsx              # React popup UI
+│   ├── types.ts               # TypeScript type definitions
+│   ├── config/
+│   │   ├── domains.ts         # Productive/unproductive domain lists
+│   │   └── api.ts             # API configuration
+│   ├── utils/
+│   │   ├── domain.ts          # Domain extraction utilities
+│   │   └── time.ts            # Time formatting utilities
+│   └── api/
+│       └── client.ts          # Backend API client
+└── public/                    # Build output (load this in Chrome)
 ```
 
-## ML Architecture
+## Setup
 
-### 1. Productivity Classifier
-- **Model**: 3-layer feedforward neural network (PyTorch)
-- **Features**: Domain category, time of day, session duration, tab patterns, idle behavior
-- **Performance**: 89% accuracy, 0.87 F1-score
-- **Training**: 10,000+ labeled sessions from 50+ users
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-### 2. LSTM Time-Series Forecaster
-- **Model**: 2-layer LSTM with dropout
-- **Input**: 7-day historical productivity scores
-- **Performance**: <100ms latency, 0.12 MAE
-- **Use Case**: Predicts optimal focus windows
+2. **Build the extension**:
+   ```bash
+   npm run build
+   ```
 
-### 3. Anomaly Detection
-- **Model**: Autoencoder-based neural network
-- **Output**: Attention drift scores (0-1)
-- **Performance**: 35% fewer false positives
-- **Use Case**: Detects "zombie scrolling" vs. genuine focus
+3. **Load in Chrome**:
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `public/` directory
 
-### 4. RAG-Powered Insights
-- **System**: Claude API + productivity research knowledge base
-- **Input**: User telemetry + behavioral patterns
-- **Output**: Personalized, evidence-backed recommendations
+## Running via Docker (frontend + backend)
 
-## Quick Start
+Build a single image that runs both the Next.js dashboard and the Express backend:
 
-### 1. Build Extension
-```bash
-npm install
-npm run build
+1. **Build the image**:
+   ```bash
+   docker build -t anchor-app .
+   ```
+
+2. **Run it** (the frontend listens on `3000`, backend on `3001`):
+   ```bash
+   docker run -p 3000:3000 -p 3001:3001 anchor-app
+   ```
+
+3. **Optional: publish the image**
+   ```bash
+   docker tag anchor-app yourhubname/anchor-app:latest
+   docker push yourhubname/anchor-app:latest
+   ```
+
+   Others can `docker pull yourhubname/anchor-app:latest` and start the stack without installing Node.js. The backend expects the usual `.env` vars (DATABASE_URL, etc.), so pass them via `-e` when running the container.
+
+## Demo data
+
+To create a UofT-style demo student before showing the dashboard:
+
+1. **Run the Prisma seed script** (make sure your `DATABASE_URL` points to your dev database):
+   ```bash
+   cd backend
+   npm run prisma:seed
+   ```
+
+   That creates a user `demo+uoft@example.com` / `AnchorDemo2025!` with 30 days of sessions showing steady focus improvement.
+
+2. **Log in** through your auth flow or insert the seeded user into `sessions`/`profiles` as needed, then browse the dashboard to showcase their progression.
+
+## Development
+
+- **Build once**: `npm run build`
+- **Watch mode**: `npm run watch` (coming soon)
+
+## Configuration
+
+### API Endpoint
+
+Update `src/config/api.ts` to set your backend API base URL:
+
+```typescript
+export const API_BASE_URL = 'https://your-api.com';
 ```
 
-### 2. Load in Chrome
-- Open `chrome://extensions/`
-- Enable "Developer mode"
-- Load unpacked → select `public/` directory
+### Domain Lists
 
-### 3. Start Services
-```bash
-# ML inference server
-cd ml/inference && python serve.py
+Edit `src/config/domains.ts` to customize productive and unproductive domain lists.
 
-# Backend API
-cd backend && npm run dev
+### Dashboard URL
 
-# Dashboard
-cd dashboard && npm run dev
+Update the `DASHBOARD_URL` constant in `src/popup.tsx` to point to your web app dashboard.
+
+## Authentication
+
+The extension expects an `authToken` to be stored in `chrome.storage.local`. You'll need to implement a login flow (outside this extension) that stores the token:
+
+```javascript
+chrome.storage.local.set({ authToken: 'your-token-here' });
 ```
 
 ## How It Works
 
-### Data Pipeline
-1. **Extension** captures browsing telemetry (tabs, idle time, domains)
-2. **Feature Engineering** extracts ML features (time patterns, behavioral metrics)
-3. **ML Models** provide real-time classification and predictions
-4. **RAG Pipeline** generates personalized insights via Claude API
-5. **Dashboard** displays analytics and AI recommendations
+### Lock-In Detection
 
-### ML Enhancement Over Rules
-Traditional rule-based approach: "GitHub = productive"  
-ML enhancement: "GitHub productive when viewing repos, not when scrolling feed"
+A period is considered **Locked-In** when:
+- Active tab is on a productive domain
+- User is not idle beyond 2 minutes
+- User has not failed a random focus check
 
-## Model Performance
+A period is **Non-Lock** when:
+- Active tab is on an unproductive domain
+- User has been idle for 2+ minutes (time beyond 2 minutes counts)
+- User fails a random "Still focused?" check
 
-| Model | Metric | Score |
-|-------|--------|-------|
-| Classifier | Accuracy | 89% |
-| Classifier | F1-Score | 0.87 |
-| LSTM | MAE | 0.12 |
-| LSTM | Inference | <100ms |
-| Anomaly | FP Reduction | 35% |
-| Anomaly | Detection Rate | 92% |
+### State Machine
 
-## User Study Results
+The extension maintains three states:
+- `noSession`: No active session
+- `sessionActive_lockedIn`: Session active, user is focused
+- `sessionActive_notLockedIn`: Session active, user is distracted
 
-**Beta Testing (25 students, 30 days):**
-- 85% satisfaction score
-- 23% average focus improvement
-- 78% identified distraction triggers via anomaly detection
+### Activity Segments
+
+The extension tracks activity in segments, each recording:
+- Start/end timestamps
+- Domain
+- Productive status
+- Lock-in status
+- Reason (productive, idle-beyond-2m, unproductive-domain, failed-check, other)
+
+### Metrics
+
+For each session, the extension calculates:
+- `totalSessionSeconds`: Total session duration
+- `lockedInSeconds`: Time spent locked in
+- `nonLockSeconds`: Time spent not locked in
+- `focusRate`: `lockedInSeconds / totalSessionSeconds`
+- `idleBeyond2minSeconds`: Idle time beyond 2-minute threshold
+- `tabSwitchCount`: Number of domain changes
 
 ## API Endpoints
 
-### ML Inference
-```bash
-POST /predict/productivity
-POST /predict/forecast
-POST /detect/anomaly
-POST /insights/generate
+The extension expects these backend endpoints:
+
+### POST /sessions/start
+**Request**: `{ authToken }`  
+**Response**: `{ sessionId }`
+
+### POST /sessions/activity
+**Request**: 
+```json
+{
+  "sessionId": "123",
+  "segments": [ /* ActivitySegment[] */ ]
+}
 ```
 
-### Session Management
-```bash
-POST /sessions/start
-POST /sessions/activity
-POST /sessions/end
+### POST /sessions/end
+**Request**:
+```json
+{
+  "sessionId": "123",
+  "sessionStartTimestamp": 1234567890,
+  "sessionEndTimestamp": 1234567890,
+  "totalSessionSeconds": 3600,
+  "lockedInSeconds": 3000,
+  "nonLockSeconds": 600,
+  "focusRate": 0.833,
+  "idleBeyond2minSeconds": 120,
+  "tabSwitchCount": 5,
+  "segments": [ /* ActivitySegment[] */ ]
+}
 ```
 
-## Training Models
-```bash
-# Classifier
-cd ml/training
-python train_classifier.py --data labeled_sessions.csv --epochs 50
+## Permissions
 
-# LSTM
-python train_lstm.py --data time_series.csv --sequence-length 7
-```
-
-## Tech Stack
-
-**Frontend**: TypeScript, React, Chrome Extension API  
-**ML**: PyTorch, NumPy, Pandas, Scikit-learn  
-**Backend**: Node.js, Express, PostgreSQL  
-**AI**: Anthropic Claude API, LangChain  
-**Dashboard**: Next.js, Recharts  
-
-## Research Foundation
-
-Models inspired by academic research in:
-- Attention span modeling (*Lehmann et al., 2012*)
-- Context-aware productivity (*Iqbal & Horvitz, 2007*)
-- Flow states in knowledge work (*Meyer et al., 2014*)
+The extension requires:
+- `tabs`: Track active tabs
+- `activeTab`: Access current tab info
+- `storage`: Store session state and auth token
+- `idle`: Detect user idle state
+- `notifications`: Show random focus checks
+- `scripting`: Inject content scripts (if needed)
+- `<all_urls>`: Track domains on any website
 
 ## License
 
 MIT
 
-## Citation
-```bibtex
-@software{anchor2025,
-  author = {Salman, Mohamad},
-  title = {Anchor: ML-Powered Focus Analytics},
-  year = {2025},
-  url = {https://github.com/mohamadmsalman82/Anchor}
-}
-```
+# Anchor
